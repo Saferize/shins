@@ -1,0 +1,1641 @@
+openapi: 3.0.0
+servers: []
+info:
+  description: >
+    The Saferize API is organized around
+    [REST](http://en.wikipedia.org/wiki/Representational_State_Transfer). Our
+    API has predictable, resource-oriented URLs, and uses HTTP response codes to
+    indicate API errors. We support [cross-origin resource
+    sharing](https://en.wikipedia.org/wiki/Cross-origin_resource_sharing),
+    allowing you to interact securely with our API from a client-side web
+    application (though you should never expose your secret API key in any
+    public website's client-side code). [JSON](http://www.json.org/) is returned
+    by all API responses, including errors.
+
+
+    To make the API as explorable as possible, accounts have test mode and live
+    mode API keys. There is No "switch" for changing between modes, just use the
+    appropriate key to perform a live or test transaction.
+
+
+    Be sure to subscribe to Saferize's API announce mailing list to receive
+    information on new additions and changes to Saferize's API.
+
+
+    The requests in the right sidebar are designed to work as is.
+  title: Saferize API
+  version: v1
+  termsOfService: 'https://saferize.com/terms-of-service/'
+  contact:
+    email: dev@saferize.com
+tags:
+  - name: Developer
+    description: >-
+      The `Developer` object represents the publisher. You can create, retrieve
+      and update a developer. You may also view all the apps associated with the
+      developer.
+  - name: App
+    description: >-
+      This is an object representing an App that implements Saferize. You can
+      retreive it to see it's many properties state, configuration, platforms
+      etc.
+  - name: Approval
+    description: >-
+      An approval is created each time a child creates an account on the app.
+      When this happens, the parent is given an opportunity to respond to the
+      request by either approving or rejecting the app and validating
+      relationship. Moreover, changes on the approval object by the parent
+      reflect child's interaction with the app. The approval object is the
+      intersection of Saferize (reword).
+  - name: Family
+    description: >-
+      Family methods provide access to information and operations relating to
+      the Family. You can create, retrieve and update a family as well as list
+      all it's members. You may also view all the validations of this family
+      (such as Microtransaction, Email, SMS & Questionnaire)
+  - name: Parent
+    description: >-
+      The parent object administrates approval objects and child objects. You
+      can create, retrieve and update a parent. You may also invite other
+      parents, join them to the family and have them co-administrate approvals.
+  - name: Child
+    description: >-
+      The child object represents a child who can be on many different approvals
+      (correlating to the number of the apps the user is registered on). You can
+      create, retrieve and update a child. You may also view all the approvals
+      associated with the child.
+  - name: Session
+    description: Saferize Session
+  - name: Events
+    description: >
+      Use webhooks to be notified about events that happen on the Saferize
+      platform.
+        * ApprovalCreatedEvent
+        * ApprovalStatusChangedEvent
+        * SessionTerminatedEvent
+        * AppUserFeaturesChangedEvent
+        * UsageTimerCreatedEvent
+        * UsageTimerTimeIsUpEvent
+        * UsageTimerPausedEvent
+        * UsageTimerUnPausedEvent
+security:
+  - ApiKeyAuth: []
+  - OAuth2:
+      - read
+      - write
+          
+paths:
+  /developer:
+    post:
+      tags:
+        - Developer
+      summary: Create a developer
+      description: The developer object is created when a new developer registers.
+      operationId: createDeveloper
+      responses:
+        '201':
+          description: The created developer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Developer'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/Conflict'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Developer'
+        description: The new developer to be created
+        required: true
+  /developer/me:
+    get:
+      tags:
+        - Developer
+      summary: Retreieve the developer
+      description: Retrieves the developer object associated with the current session.
+      operationId: getDeveloper
+      responses:
+        '200':
+          description: The developer object
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Developer'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    put:
+      tags:
+        - Developer
+      summary: Update the developer
+      description: >-
+        Updates the developer object associated with the current session. For
+        security reasons, email cannot be updated through this endpoint.
+      operationId: updateDeveloper
+      responses:
+        '200':
+          description: The updated developer.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Developer'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Developer'
+            example:
+              firstName: Dan
+
+            # schema:
+            #   type: object
+            #   properties:
+            #     id: 
+            #       type: integer
+            #       example: 1234
+            #     firstName: 
+            #       type: string
+            #       example: Jane
+            #     lastName: 
+            #       type: string
+            #       example: Doe
+            #     mobilePhone:
+            #       type: string
+            #       example: 415-123-4567
+            #     company:
+            #       type: string
+            #       example: Saferize
+            #     country:
+            #       type: string
+            #       example: CA              
+        description: The developer to be updated to.
+        required: true
+  /developer/me/apps:
+    get:
+      tags:
+        - Developer
+      summary: Retreieve developer's apps
+      description: Retrieves the apps associated with the developer.
+      operationId: getApps
+      responses:
+        '200':
+          description: An array of apps
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/App'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /app:
+    post:
+      tags:
+        - App
+      operationId: createApp
+      summary: Create an app
+      responses:
+        '201':
+          description: The created app.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/App'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/Conflict'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/App'
+        description: The new app to be created.
+        required: true
+    put:
+      tags:
+        - App
+      operationId: changeAppAttributes
+      summary: Changes some of the descriptive attributes of the app. Bear in mind that this endpoint does not alter the core configuration of the app.
+      responses:
+        '200':
+          description: The updated app.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/App'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/App'
+        description: App fields to be updated.
+        required: true
+            
+  '/app/{id}/key':
+    post:
+      tags:
+        - App
+      operationId: createKey
+      summary: Authenticate an app
+      description: >-
+        Authenticate your app by using a public-key authentication. Your apps'
+        keys carry many privileges, so be sure to keep your private key secret!
+        Do not share your private keys in publicly accessible areas such GitHub,
+        client-side code, and so forth.
+      parameters:
+        - name: id
+          in: path
+          description: Unique identifier for the app.
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '201':
+          description: Returns the newly created access key if the public key was valid.
+          content:
+            application/json:
+              schema:
+                type: string
+                example: 031e58c6-a92c-453d-920d-33ad279392de
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/Conflict'
+      requestBody:
+        $ref: '#/components/requestBodies/createKeyPublicKey'
+    put:
+      tags:
+        - App
+      operationId: rollKey
+      summary: Roll app authentication
+      description: >-
+        If you believe your key is compromised, roll the key with a newly
+        generated public key.
+      parameters:
+        - name: id
+          in: path
+          description: Unique identifier for the app.
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Returns the access key if the public key was valid.
+          content:
+            application/json:
+              schema:
+                type: string
+                example: 031e58c6-a92c-453d-920d-33ad279392de
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+      requestBody:
+        $ref: '#/components/requestBodies/createKeyPublicKey'
+  '/app/{id}':
+    get:
+      tags:
+        - App
+      operationId: getAppBy
+      summary: Retrieve an app
+      parameters:
+        - name: id
+          in: path
+          description: The identifier of the app to retrieve.
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Returns the app object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/App'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  '/app/{id}[timeRestriction]*':
+    patch:
+      summary: Update app time restrictions
+      tags:
+        - App
+      operationId: changeTimeRestriction
+      description: >
+        Time restrictions is a Saferize internal feature. If you would like
+        parents to manage sessions, set time limits, and arbitrary pause/resume
+        the app, you can set the time restrictions flag value to `ENABLED`. This
+        is also the default value set upon [app
+        creation](/#operation--app-post).
+
+
+        Otherwise, you may disable this feature by setting the time restrictions
+        flag value to `DISABLED`.
+
+        * The path in brackets not included in the actual path, but in the JsonPatch operation
+      parameters:
+        - name: id
+          in: path
+          description: Unique identifier for the app.
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Returns the app object with an updated field.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/App'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JsonPatch'
+            example:
+              op: replace
+              path: /timeRestriction
+              value: ENABLED
+        description: A JsonPatch operation `replace`.
+        required: true
+  '/app/{id}[status]*':
+    patch:
+      summary: Update app status
+      tags:
+        - App
+      operationId: changeStatus
+      description: >
+        * The path in square brackets not included in the actual path, but in the JsonPatch operation.
+
+
+        When the app is created, the initial status is `DRAFT`. Once the app is
+        configured, you may change the status to ```PUBLISHED``` via this
+        endpoint. This will initialize the process of publishing the app, and
+        the status will be `IN_REVIEW` until Saferize Customer Support approves
+        it.
+
+
+        Firstly, you must [Authenticate the app](). In order to publish the app,
+        all [App](/#/definitions/App) fields must be populated. In addition to
+        this, the app must have have at least one
+        [Screenshot](/#uploadscreenshot) and one
+        [Logo](/#uploadlogo) uploaded. 
+
+
+        To delete the app, set the status to `DELETED`.
+
+
+        If you need any help throughout this process, please contact the
+        Saferize Customer Support.
+
+      parameters:
+        - name: id
+          in: path
+          description: Unique identifier for the app.
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Returns the app object with an updated field.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/App'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JsonPatch'
+              example:
+                op: replace
+                path: /status
+                value: PUBLISHED
+        description: A JsonPatch operation `replace`.
+        required: true
+  '/app/{id}/config':
+    put:
+      tags:
+        - App
+      operationId: updateAppConfig
+      summary: Update app configuration
+      parameters:
+        - name: id
+          in: path
+          description: Unique identifier for the app.
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: >-
+            Returns the app configuration object if the update succeeded. This
+            call will throw an error if update parameters are invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppConfig'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppConfig'
+        description: The new app configuration.
+        required: true
+    get:
+      tags:
+        - App
+      operationId: getAppConfig
+      summary: Retrieve app configuration
+      parameters:
+        - name: id
+          in: path
+          description: Unique identifier for the app.
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Returns the app configuration object if it exists on the system.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppConfig'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  '/app/{id}/logo':
+    post:
+      tags:
+        - App
+      operationId: uploadLogo
+      summary: Upload app logo
+      parameters:
+        - name: id
+          in: path
+          description: Unique identifier for the app.
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '201':
+          description: Returns the image object if the upload succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImageUpload'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/Conflict'
+      requestBody:
+        $ref: '#/components/requestBodies/uploadLogoBody'
+    get:
+      tags:
+        - App
+      operationId: getLogos
+      summary: Retrieve app logo
+      parameters:
+        - name: id
+          in: path
+          description: Unique identifier for the app.
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Returns an array of image objects if they exist on the system.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ImageUpload'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  '/app/{id}/logo/{logoId}':
+    delete:
+      tags:
+        - App
+      operationId: deleteLogo
+      summary: Delete app logo
+      parameters:
+        - name: id
+          in: path
+          description: Unique identifier for the app.
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - in: path
+          name: logoId
+          description: Unique identifier for the image file to be deleted.
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: Returns `No Content` if the deletion was succeeded.
+  '/app/{id}/screenshots':
+    post:
+      tags:
+        - App
+      operationId: uploadScreenshot
+      summary: Upload app screenshot
+      parameters:
+        - name: id
+          in: path
+          description: Unique identifier for the app.
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Returns the image object if the upload succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImageUpload'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/Conflict'
+      requestBody:
+        $ref: '#/components/requestBodies/uploadLogoBody'
+    get:
+      tags:
+        - App
+      operationId: getScreenshots
+      summary: Retrieve app screenshots
+      parameters:
+        - name: id
+          in: path
+          description: Unique identifier for the app.
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Returns an array of image objects if they exist on the system.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ImageUpload'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  '/app/{id}/screenshots/{screenshotId}':
+    delete:
+      tags:
+        - App
+      operationId: deleteScreenshot
+      summary: Delete app screenshot
+      parameters:
+        - name: id
+          in: path
+          description: Unique identifier for the app.
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - in: path
+          name: screenshotId
+          description: Unique identifier for the image file to be deleted.
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: Returns `No Content` if the deletion was succeeded.
+  '/app/{id}/plan':
+    get:
+      tags:
+        - App
+      operationId: getAppPlan
+      summary: Retrieve app plan
+      parameters:
+        - name: id
+          in: path
+          description: Unique identifier for the app.
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Returns a subscription plan object if it exists on the system.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionPlan'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  '/app/{id}/features':
+    get:
+      tags:
+        - App
+      operationId: getAppFeatures
+      summary: Retrieve app features
+      parameters:
+        - name: id
+          in: path
+          description: Unique identifier for the app.
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Returns an array of app feature objects if they exist on the system.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AppFeature'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  '/app/{id}/implementedFeatures':
+    put:
+      tags:
+        - App
+      operationId: setImplementedAppFeatures
+      summary: Set implemented features
+      description: >-
+        The publicly visible list of implemented features is important for
+        transparency. From this list you can specify which ones the parents can
+        customize their experience when you [Set parental
+        features](/#operation--app--id--parentalFeatures-put).
+      parameters:
+        - name: id
+          in: path
+          description: Unique identifier for the app.
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Returns an array of app feature objects.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AppFeature'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Approval'
+        description: The new Approval
+        required: true
+  '/app/{id}/parentalFeatures':
+    put:
+      tags:
+        - App
+      operationId: setParentalAppFeatures
+      summary: Set parental features
+      description: >-
+        Parental features allow parents to customize their experience with these
+        features. It's up to developer's discretion to determine which features
+        they wish to expose. Please [Set implemented
+        features](/#operation--app--id--implementedFeatures-put) before setting
+        parental features.
+      parameters:
+        - name: id
+          in: path
+          description: Unique identifier for the app.
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: >-
+            Returns an array of app feature objects. Bare in mind that the
+            `parental` flag will be set to `false` initially.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AppFeature'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Approval'
+        description: The new Approval
+        required: true          
+  /approval:
+    post:
+      tags:
+        - Approval
+      summary: Initiate an approval
+      description: >-
+        To get parent consent to add a new app user (a child), a new approval
+        object is created.
+      operationId: initiateApproval
+      responses:
+        '201':
+          description: Approval Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Approval'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Approval'
+        description: The new Approval
+        required: true
+    get:
+      tags:
+        - Approval
+      operationId: getApprovals
+      summary: List all approvals
+      responses:
+        '200':
+          description: Returns all approvals
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Approval'
+  '/approval/{id}':
+    get:
+      tags:
+        - Approval
+      operationId: getApprovalById
+      summary: Retrieve an approval
+      parameters:
+        - name: id
+          in: path
+          description: The identifier of the approval to retrieve.
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Return a single approval
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Approval'
+    patch:
+      tags:
+        - Approval
+      operationId: changeApproval
+      summary: Update an approval
+      parameters:
+        - name: id
+          in: path
+          description: The approval Id to get
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Return the changed approval
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Approval'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JsonPatch'
+              example:
+                op: replace
+                path: /status
+                value: APPROVED
+        description: >-
+          A JsonPatch array with the fields to be changed. Current supported
+          fields are ~ status, child, features
+        required: true
+  '/approval/token/{token}':
+    get:
+      tags:
+        - Approval
+      operationId: getApprovalByToken
+      summary: Retrieve an approval via token
+      parameters:
+        - name: token
+          in: path
+          description: The unique token assigned by the app to the approval.
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Return approval
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Approval'
+  /family:
+    post:
+      tags:
+        - Family
+      summary: Create a family
+      description: >-
+        The family object is created when a child becomes an app user by parent
+        consent. The family members are associated with this object.
+      operationId: createFamily
+      responses:
+        '201':
+          description: Return the new Family
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Family'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Family'
+        description: The new Family to be created
+        required: true
+  /family/me:
+    get:
+      tags:
+        - Family
+      operationId: getFamily
+      summary: Retrieve your family
+      responses:
+        '200':
+          description: Return the Family
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Family'
+    put:
+      tags:
+        - Family
+      operationId: updateFamily
+      summary: Update your family
+      responses:
+        '200':
+          description: The changed Family
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Family'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Family'
+        description: The changed family.
+        required: true
+  /child:
+    get:
+      tags:
+        - Child
+      operationId: getChildren
+      summary: Get all children members of the family
+      responses:
+        '200':
+          description: Returns an array of Child
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Child'
+    post:
+      tags:
+        - Child
+      operationId: createChild
+      summary: Creates a new Child
+      responses:
+        '201':
+          description: The created Child
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Child'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Child'
+        description: The Child to be created.
+        required: true
+  '/child/{childId}':
+    get:
+      tags:
+        - Child
+      summary: Get a child via identifier
+      operationId: GetChildById
+      parameters:
+        - name: childId
+          in: path
+          required: true
+          description: The identifier of the child to retrieve.
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Returns the child
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Child'
+    put:
+      tags:
+        - Child
+      summary: Update a child via identifier
+      operationId: updateChild
+      parameters:
+        - name: childId
+          in: path
+          required: true
+          description: Unique identifier for the child.
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Returns the child
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Child'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Child'
+        description: The Child to be updated.
+        required: true
+  /parent:
+    post:
+      tags:
+        - Parent
+      summary: Creates a new Parent
+      responses:
+        '200':
+          description: Returns the new Parent
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Parent'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Parent'
+        description: The parent to be created.
+        required: true
+  '/parent/{parentId}':
+    get:
+      tags:
+        - Parent
+      summary: Gets a Parent by Id
+      operationId: getParentById
+      parameters:
+        - name: parentId
+          in: path
+          required: true
+          description: Unique identifier for the parent.
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Parent
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Parent'
+  /parent/me:
+    put:
+      tags:
+        - Parent
+      summary: Change the Parent
+      operationId: UpdateParent
+      responses:
+        '200':
+          description: Returns the changed Parent
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Parent'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Parent'
+        description: The Parent to be updated.
+        required: true
+components:
+  responses:
+    BadRequest:
+      description: >-
+        The request was unacceptable, likely due to missing a required
+        parameter.
+      content:
+        '*/*':
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: No valid `Authentication` header provided.
+      content:
+        '*/*':
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: The specified resource was not found.
+      content:
+        '*/*':
+          schema:
+            $ref: '#/components/schemas/Error'
+    Conflict:
+      description: The request conflicts with another request
+      content:
+        '*/*':
+          schema:
+            $ref: '#/components/schemas/Error'
+  requestBodies:
+    AppFeature/properties/nameArray:
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/AppFeature/properties/name'
+            example:
+              - CHAT
+              - ADVERTISING
+      description: An array of implemented app features
+    createKeyPublicKey:
+      content:
+        application/json:
+          schema:
+            type: string
+            example: >-
+              -----BEGIN PUBLIC KEY-----
+              MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEApofmdG+zACt1kHNlQciwyg3DuRW5za33FuBH+Zb8JoixthvtZNgee6+TkbCEWGmC9+cIJLTnialKdDUxlr5JpCtJnIpaiD++Ic5AINpE0zqhD4obR8eN7m5lcKGuNwShFxB/lc+IFHeEf5MkPcU+nSkJIV74F0XJIqNeewGxNayJ/bbIuOS4gMI0/lU18ua3OsLvVmJZyXObiYq3nMfSwWKuhfLqRMSSfICEDjnVAq3+F8/lxoqAxbC0gFZC3CdOjINgMJYr3XY6fo9oAkrt4yjSO9kAqQxaHiLqJ87gjjQEKaBzlejTM3/iJBamQUCF3VPZ3y7AoSCEWBEA5xhvXQIDAQAB
+              -----END PUBLIC KEY-----
+      description: RSA public key.
+      required: true
+    uploadLogoBody:
+      content:
+        application/json:
+          schema:
+            type: string
+      description: >-
+        A file to upload. The file should follow the specifications of RFC 2388
+        (which defines file transfers for the `multipart/form-data protocol`.
+      required: true
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    Family:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Unique identifier for the family returned by the system.
+          example: 12345
+        name:
+          type: string
+          description: The family name
+          example: Smith
+    App:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Unique identifier for the app returned by the system.
+          example: 1
+        name:
+          type: string
+          description: The name of the app.
+          example: Saferize Example
+        platforms:
+          type: array
+          description: >-
+            An array of enums that specify what platforms are supported by this
+            app.
+          items:
+            type: string
+          enum:
+            - ANDROID
+            - IOS
+            - WINDOWS
+            - MAC_OS
+            - LINUX
+            - APPLE_TV
+            - ANDROID_TV
+            - APPLE_WATCH
+            - ANDROID_WATCH
+            - XBOX
+            - NINTENDO
+            - PLAYSTATION
+          example:
+            - ANDROID
+            - IOS
+        category:
+          description: One of the predifned values indicating the category of the app.
+          type: string
+          enum:
+            - GAME
+            - MEDIA
+          example: GAME
+        timeRestriction:
+          type: string
+          description: On/Off flag for enabling/disabling time restrictions on the app.
+          enum:
+            - ENABLED
+            - DISABLED
+          example: ENABLED
+        status:
+          type: string
+          description: >-
+            Current lifecycle status of the app. Please read more on the
+            requirements for publishing the app.
+          enum:
+            - DRAFT
+            - PUBLISHED
+            - DELETED
+          example: PUBLISHED
+        description:
+          type: string
+          description: A description of the app.
+          example: >-
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+            eiusmod tempor incididunt ut labore et dolore magna aliqua.
+        urlName:
+          type: string
+          description: The partial url name of this app on Saferize.
+        details:
+          type: array
+          description: Features implemented on the app.
+          items:
+            type: string
+          enum:
+            - SOCIAL_INTERACTION
+            - IN_APP_PURCHASES
+            - ADVERTISING
+            - PAID_APP
+            - SUBSCRIPTION
+          example:
+            - SOCIAL_INTERACTION
+            - IN_APP_PURCHASES
+        email:
+          type: string
+          description: The app developer's email.
+          example: developer@example.com
+    Parent:
+      type: object
+      required:
+        - firstName
+        - lastName
+        - email
+        - family
+        - id
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Unique identifier for the parent returned by the system.
+          example: 123456
+        firstName:
+          type: string
+          description: First Name
+          example: John
+        lastName:
+          type: string
+          description: Last Name
+          example: Smith
+        mobilePhone:
+          type: string
+          format: phone
+          description: >-
+            Mobile Phone. The format should be XXXYYYZZZZ (no dashes or
+            parenthesis)
+          example: 41512345678
+        family:
+          $ref: '#/components/schemas/Family'
+        email:
+          type: string
+          format: email
+          example: parent@example.com
+    Child:
+      type: object
+      required:
+        - id
+        - firstName
+        - family
+        - gender
+        - birthDate
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Unique identifier for the child returned by the system.
+          example: 1234567
+        firstName:
+          type: string
+          description: Child's first name
+          example: Sofia
+        lastName:
+          type: string
+          description: Child's last Name
+          example: Smith
+        birthDate:
+          description: The childs date of birth
+          type: string
+          format: date
+          example: '2009-01-23T00:00:00.000Z'
+        family:
+          $ref: '#/components/schemas/Family'
+        gender:
+          description: The child's gender
+          type: string
+          enum:
+            - MALE
+            - FEMALE
+            - UNKNOWN
+          example: FEMALE
+    Developer:
+      type: object
+      required:
+        - id
+        - firstName
+        - lastName
+        - email
+        - mobilePhone
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Unique identifier for the developer returned by the system.
+          example: 1234
+        firstName:
+          type: string
+          description: Developer's first name.
+          example: Jane
+        lastName:
+          type: string
+          description: Developer's last name.
+          example: Doe
+        email:
+          description: Developer's primary email address.
+          type: string
+          example: jane.doe@example.com
+        mobilePhone:
+          description: Developer's primary mobile phone number.
+          type: string
+          example: 415-123-4567
+        company:
+          description: Developer's company name.
+          type: string
+          example: Saferize
+        country:
+          description: >-
+            The country in which the developer resides, or in which the company
+            is legally established. This should be an ISO 3166-1 alpha-2 country
+            code. For example, if you are in the United States and the business
+            for which you're creating an account is legally represented in
+            Canada, you would use `CA` as the country for the account being
+            created.
+          type: string
+          example: CA
+    AppUser:
+      type: object
+      required:
+        - id
+        - token
+        - app
+        - child
+        - family
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: The AppUser Id returned by the system
+          example: 123
+        token:
+          type: string
+          description: >-
+            A client token for the app. This is defined by the app and should be
+            unique per user of the app.
+          example: child_nickname_on_game_1
+        app:
+          $ref: '#/components/schemas/App'
+        child:
+          $ref: '#/components/schemas/Child'
+        family:
+          $ref: '#/components/schemas/Family'
+    Approval:
+      type: object
+      required:
+        - id
+        - appUser
+        - family
+        - statusTime
+        - createdTime
+        - status
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: The Approval Id returned by the system
+          example: 12
+        appUser:
+          $ref: '#/components/schemas/AppUser'
+        approvalParent:
+          $ref: '#/components/schemas/Parent'
+        family:
+          $ref: '#/components/schemas/Family'
+        statusTime:
+          type: string
+          format: date-time
+          description: The time and date of the last status change
+          example: '2017-11-09T14:23:00.000Z'
+        createdTime:
+          type: string
+          format: date-time
+          description: The time and date when this approval was created
+          example: '2017-11-09T14:23:00.000Z'
+        status:
+          description: The approval status
+          type: string
+          enum:
+            - PENDING
+            - NOTIFIED
+            - APPROVED
+            - REJECTED
+          example: APPROVED
+        parentEmail:
+          type: string
+          description: The email of the parent who received this request
+          example: parent@myfamily.com
+        parentMobilePhone:
+          type: string
+          description: The phone number of the parent who received this request
+          example: 4151234567
+    AppConfig:
+      type: object
+      properties:
+        webhookUrl:
+          type: string
+          description: Valid HTTPS endpoint for receiving webhooks.
+          example: 'https://example.saferize.com'
+        autoPauseSessionsInterval:
+          type: integer
+          format: int64
+          description: Undefined.
+          example: 30
+        autoRejectWaitTime:
+          type: integer
+          format: int64
+          description: >-
+            Time in seconds after which an unattended approval will be
+            automatically rejected.
+          example: 259200
+        validatorName:
+          $ref: '#/components/schemas/Validator'
+    AppFeature:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Unique identifier for the app feature returned by the system.
+          example: 12345678
+        appId:
+          type: integer
+          format: int64
+          description: >-
+            Unique identifier for the app that this app feature is associated
+            with.
+          example: 12
+        name:
+          type: string
+          description: 'The app feature''s name, meant to be displayable to the customer.'
+          enum:
+            - 'ADVERTISING,'
+            - 'CHAT,'
+            - 'COMMENTS,'
+            - 'DATA_COLLECTION,'
+            - 'IN_APP_PURCHASES,'
+            - 'LOCATION_SHARING,'
+            - 'PAID_APP,'
+            - 'PUSH_NOTIFICATIONS,'
+            - 'SOCIAL_INTERACTION,'
+            - SUBSCRIPTION
+          example: CHAT
+        implemented:
+          type: boolean
+          example: true
+          description: Boolean flag indicating whether the feature is implemented.
+        parentPrivilege:
+          type: boolean
+          example: true
+          description: >-
+            Boolean flag indicating whether the parents are allowed to turn
+            off/on the feature.
+    SubscriptionPlan:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Unique identifier for the subscription plan returned by the system.
+          example: 123456
+        name:
+          type: string
+          description: 'The plans’s name, meant to be displayable to the customer.'
+          example: Platinum starter
+        billingCycle:
+          description: Specifies billing frequency.
+          type: string
+          enum:
+            - WEEKLY
+            - MONTHLY
+            - YEARLY
+          example: YEARLY
+        active:
+          type: boolean
+          description: Boolean flag representing whether the plan is active.
+          example: true
+        price:
+          type: number
+          format: float
+          description: >-
+            The cost of the item as a positive float in the smallest currency
+            unit (i.e. $2.99 will be represented as 299 cents).
+          example: 299
+    ImageUpload:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Unique identifier for the image returned by the system.
+          example: 123456789
+        url:
+          type: string
+          description: A read-only URL where the uploaded file can be accessed.
+          example: 'https://s3.us-west-1.amazonaws.com/path/to/a/file.jpg"'
+        createdTime:
+          type: string
+          description: >-
+            Time at which the object was created. Measured in seconds since the
+            Unix epoch.
+          example: 1522346229038
+        width:
+          type: integer
+          format: int64
+          description: The witdh in pixels of the image object.
+          example: 200
+        height:
+          type: integer
+          format: int64
+          description: The witdh in pixels of the image object.
+          example: 200
+    Validator:
+      type: string
+      enum:
+        - Microtransaction
+        - SMS
+      example: Microtransaction
+    JsonPatch:
+      type: object
+      properties:
+        op:
+          type: string
+          enum:
+            - add
+            - replace
+            - remove
+          description: |
+            Sort order:
+             * add - Ascending, from A to Z.
+             * replace - Descending, from Z to A. 
+          example: replace
+        path:
+          type: string
+          description: the field to be updated using JsonPath syntax
+          example: /status
+        value:
+          type: object
+    Error:
+      description: >
+        Saferize uses conventional HTTP response codes to indicate the success
+        or failure of an API request. In general: Codes in the `2xx` range
+        indicate success. Codes in the `4xx` range indicate an error that failed
+        given the information provided (e.g., a required parameter was omitted,
+        a charge failed, etc.). Codes in the `5xx` range indicate an error with
+        Saferize's servers (these are rare).
+      properties:
+        message:
+          description: A human-readable message providing more details about the error.
+          example: There is already an app with those attributes.
+        type:
+          type: string
+          example: com.saferize.core.shared.DuplicateEntityException
+      required:
+        - type
+      type: object
