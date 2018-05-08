@@ -23,24 +23,29 @@ headingLevel: 2
 
 The Saferize API is organized around [REST](http://en.wikipedia.org/wiki/Representational_State_Transfer). Our API has predictable, resource-oriented URLs, and uses HTTP response codes to indicate API errors. We support [cross-origin resource sharing](https://en.wikipedia.org/wiki/Cross-origin_resource_sharing), allowing you to interact securely with our API from a client-side web application (though you should never expose your secret API key in any public website's client-side code). [JSON](http://www.json.org/) is returned by all API responses, including errors.
 
-To make the API as explorable as possible, accounts have test mode and live mode API keys. There is No "switch" for changing between modes, just use the appropriate key to perform a live or test transaction.
+To make the API as explorable as possible, accounts have test mode and live mode API keys. There is no "switch" for changing between modes, just use the appropriate key to perform a live or test transaction.
 
-Be sure to subscribe to Saferize's API announce mailing list to receive information on new additions and changes to Saferize's API.
+Be sure to subscribe to Saferize's API announcements mailing list to receive information on new additions and changes.
 
 The requests in the right sidebar are designed to work as is.
 
+`NOTE` - We HIGHLY suggest using Saferize's [Developer Console Tool](https://console.saferize.com) as opposed to making raw calls.
+
 Base URLs:
 
+* <a href="http://api.saferize.com">http://api.saferize.com</a>
+
 <a href="https://saferize.com/terms-of-service/">Terms of service</a>
-Email: <a href="mailto:dev@saferize.com">Support</a> 
+Email: <a href="mailto:devs@saferize.com">Saferize Customer Support</a> 
 
 # Authentication
 
 - HTTP Authentication, scheme: bearer 
+- Learn more about <a href="https://jwt.io/introduction/">JSON Web Tokens</a>.
 
 <h1 id="Saferize-API-Developer">Developer</h1>
 
-The `Developer` object represents the publisher. You can create, retrieve and update a developer. You may also view all the apps associated with the developer.
+The [Developer](#tocSdeveloper) object represents the publisher. You can create, retrieve and update a developer. You may also view all the apps associated with the developer.
 
 ## createDeveloper
 
@@ -50,15 +55,16 @@ The `Developer` object represents the publisher. You can create, retrieve and up
 
 ```shell
 # You can also use wget
-curl -X POST ///developer \
+curl -X POST http://api.saferize.com/developer \
   -H 'Content-Type: application/json' \
-  -H 'Accept: application/json'
+  -H 'Accept: application/json' \
+  -H 'Authorization: bearer {access-token}'
 
 ```
 
 ```http
-POST ///developer HTTP/1.1
-Host: null
+POST http://api.saferize.com/developer HTTP/1.1
+Host: api.saferize.com
 Content-Type: application/json
 Accept: application/json
 
@@ -67,12 +73,13 @@ Accept: application/json
 ```javascript
 var headers = {
   'Content-Type':'application/json',
-  'Accept':'application/json'
+  'Accept':'application/json',
+  'Authorization':'bearer {access-token}'
 
 };
 
 $.ajax({
-  url: '///developer',
+  url: 'http://api.saferize.com/developer',
   method: 'post',
 
   headers: headers,
@@ -86,7 +93,6 @@ $.ajax({
 ```javascript--nodejs
 const request = require('node-fetch');
 const inputBody = '{
-  "id": 1234,
   "firstName": "Jane",
   "lastName": "Doe",
   "email": "jane.doe@example.com",
@@ -96,11 +102,12 @@ const inputBody = '{
 }';
 const headers = {
   'Content-Type':'application/json',
-  'Accept':'application/json'
+  'Accept':'application/json',
+  'Authorization':'bearer {access-token}'
 
 };
 
-fetch('///developer',
+fetch('http://api.saferize.com/developer',
 {
   method: 'POST',
   body: inputBody,
@@ -120,10 +127,11 @@ require 'json'
 
 headers = {
   'Content-Type' => 'application/json',
-  'Accept' => 'application/json'
+  'Accept' => 'application/json',
+  'Authorization' => 'bearer {access-token}'
 }
 
-result = RestClient.post '///developer',
+result = RestClient.post 'http://api.saferize.com/developer',
   params: {
   }, headers: headers
 
@@ -135,10 +143,11 @@ p JSON.parse(result)
 import requests
 headers = {
   'Content-Type': 'application/json',
-  'Accept': 'application/json'
+  'Accept': 'application/json',
+  'Authorization': 'bearer {access-token}'
 }
 
-r = requests.post('///developer', params={
+r = requests.post('http://api.saferize.com/developer', params={
 
 }, headers = headers)
 
@@ -147,7 +156,7 @@ print r.json()
 ```
 
 ```java
-URL obj = new URL("///developer");
+URL obj = new URL("http://api.saferize.com/developer");
 HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 con.setRequestMethod("POST");
 int responseCode = con.getResponseCode();
@@ -176,11 +185,12 @@ func main() {
     headers := map[string][]string{
         "Content-Type": []string{"application/json"},
         "Accept": []string{"application/json"},
+        "Authorization": []string{"bearer {access-token}"},
         
     }
 
     data := bytes.NewBuffer([]byte{jsonReq})
-    req, err := http.NewRequest("POST", "///developer", data)
+    req, err := http.NewRequest("POST", "http://api.saferize.com/developer", data)
     req.Header = headers
 
     client := &http.Client{}
@@ -192,15 +202,14 @@ func main() {
 
 `POST /developer`
 
-*Create a developer*
+*Create a Developer*
 
-The developer object is created when a new developer registers.
+The `Developer` object is created when a new developer registers.
 
 > Body parameter
 
 ```json
 {
-  "id": 1234,
   "firstName": "Jane",
   "lastName": "Doe",
   "email": "jane.doe@example.com",
@@ -214,7 +223,13 @@ The developer object is created when a new developer registers.
 
 |Parameter|In|Type|Required|Description|
 |---|---|---|---|---|
-|body|body|[Developer](#schemadeveloper)|true|The new developer to be created|
+|body|body|object|true|The new developer to be created|
+|» firstName|body|string|true|Developer's first name.|
+|» lastName|body|string|true|Developer's last name.|
+|» email|body|string|true|Developer's primary email address.|
+|» mobilePhone|body|string|true|Developer's primary mobile phone number. The format should be XXXYYYZZZZ (no dashes or parentheses).|
+|» company|body|string|false|Developer's company name.|
+|» country|body|string|false|The country in which the developer resides, or in which the company is legally established. This should be an ISO 3166-1 alpha-2 country code. For example, if you are in the United States and the business for which you're creating an account is legally represented in Canada, you would use `CA` as the country for the account being created.|
 
 > Example responses
 
@@ -241,7 +256,7 @@ The developer object is created when a new developer registers.
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
-None, None ( Scopes: read write )
+BearerAuth
 </aside>
 
 ## getDeveloper
@@ -252,14 +267,15 @@ None, None ( Scopes: read write )
 
 ```shell
 # You can also use wget
-curl -X GET ///developer/me \
-  -H 'Accept: */*'
+curl -X GET http://api.saferize.com/developer/me \
+  -H 'Accept: */*' \
+  -H 'Authorization: bearer {access-token}'
 
 ```
 
 ```http
-GET ///developer/me HTTP/1.1
-Host: null
+GET http://api.saferize.com/developer/me HTTP/1.1
+Host: api.saferize.com
 
 Accept: */*
 
@@ -267,12 +283,13 @@ Accept: */*
 
 ```javascript
 var headers = {
-  'Accept':'*/*'
+  'Accept':'*/*',
+  'Authorization':'bearer {access-token}'
 
 };
 
 $.ajax({
-  url: '///developer/me',
+  url: 'http://api.saferize.com/developer/me',
   method: 'get',
 
   headers: headers,
@@ -287,11 +304,12 @@ $.ajax({
 const request = require('node-fetch');
 
 const headers = {
-  'Accept':'*/*'
+  'Accept':'*/*',
+  'Authorization':'bearer {access-token}'
 
 };
 
-fetch('///developer/me',
+fetch('http://api.saferize.com/developer/me',
 {
   method: 'GET',
 
@@ -310,10 +328,11 @@ require 'rest-client'
 require 'json'
 
 headers = {
-  'Accept' => '*/*'
+  'Accept' => '*/*',
+  'Authorization' => 'bearer {access-token}'
 }
 
-result = RestClient.get '///developer/me',
+result = RestClient.get 'http://api.saferize.com/developer/me',
   params: {
   }, headers: headers
 
@@ -324,10 +343,11 @@ p JSON.parse(result)
 ```python
 import requests
 headers = {
-  'Accept': '*/*'
+  'Accept': '*/*',
+  'Authorization': 'bearer {access-token}'
 }
 
-r = requests.get('///developer/me', params={
+r = requests.get('http://api.saferize.com/developer/me', params={
 
 }, headers = headers)
 
@@ -336,7 +356,7 @@ print r.json()
 ```
 
 ```java
-URL obj = new URL("///developer/me");
+URL obj = new URL("http://api.saferize.com/developer/me");
 HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 con.setRequestMethod("GET");
 int responseCode = con.getResponseCode();
@@ -364,11 +384,12 @@ func main() {
 
     headers := map[string][]string{
         "Accept": []string{"*/*"},
+        "Authorization": []string{"bearer {access-token}"},
         
     }
 
     data := bytes.NewBuffer([]byte{jsonReq})
-    req, err := http.NewRequest("GET", "///developer/me", data)
+    req, err := http.NewRequest("GET", "http://api.saferize.com/developer/me", data)
     req.Header = headers
 
     client := &http.Client{}
@@ -380,7 +401,7 @@ func main() {
 
 `GET /developer/me`
 
-*Retreieve the developer*
+*Retrieve the Developer*
 
 Retrieves the developer object associated with the current session.
 
@@ -395,7 +416,7 @@ Retrieves the developer object associated with the current session.
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
-None, None ( Scopes: read write )
+BearerAuth
 </aside>
 
 ## updateDeveloper
@@ -406,15 +427,16 @@ None, None ( Scopes: read write )
 
 ```shell
 # You can also use wget
-curl -X PUT ///developer/me \
+curl -X PUT http://api.saferize.com/developer/me \
   -H 'Content-Type: application/json' \
-  -H 'Accept: application/json'
+  -H 'Accept: application/json' \
+  -H 'Authorization: bearer {access-token}'
 
 ```
 
 ```http
-PUT ///developer/me HTTP/1.1
-Host: null
+PUT http://api.saferize.com/developer/me HTTP/1.1
+Host: api.saferize.com
 Content-Type: application/json
 Accept: application/json
 
@@ -423,12 +445,13 @@ Accept: application/json
 ```javascript
 var headers = {
   'Content-Type':'application/json',
-  'Accept':'application/json'
+  'Accept':'application/json',
+  'Authorization':'bearer {access-token}'
 
 };
 
 $.ajax({
-  url: '///developer/me',
+  url: 'http://api.saferize.com/developer/me',
   method: 'put',
 
   headers: headers,
@@ -442,21 +465,20 @@ $.ajax({
 ```javascript--nodejs
 const request = require('node-fetch');
 const inputBody = '{
-  "id": 1234,
   "firstName": "Jane",
   "lastName": "Doe",
-  "email": "jane.doe@example.com",
   "mobilePhone": "415-123-4567",
   "company": "Saferize",
   "country": "CA"
 }';
 const headers = {
   'Content-Type':'application/json',
-  'Accept':'application/json'
+  'Accept':'application/json',
+  'Authorization':'bearer {access-token}'
 
 };
 
-fetch('///developer/me',
+fetch('http://api.saferize.com/developer/me',
 {
   method: 'PUT',
   body: inputBody,
@@ -476,10 +498,11 @@ require 'json'
 
 headers = {
   'Content-Type' => 'application/json',
-  'Accept' => 'application/json'
+  'Accept' => 'application/json',
+  'Authorization' => 'bearer {access-token}'
 }
 
-result = RestClient.put '///developer/me',
+result = RestClient.put 'http://api.saferize.com/developer/me',
   params: {
   }, headers: headers
 
@@ -491,10 +514,11 @@ p JSON.parse(result)
 import requests
 headers = {
   'Content-Type': 'application/json',
-  'Accept': 'application/json'
+  'Accept': 'application/json',
+  'Authorization': 'bearer {access-token}'
 }
 
-r = requests.put('///developer/me', params={
+r = requests.put('http://api.saferize.com/developer/me', params={
 
 }, headers = headers)
 
@@ -503,7 +527,7 @@ print r.json()
 ```
 
 ```java
-URL obj = new URL("///developer/me");
+URL obj = new URL("http://api.saferize.com/developer/me");
 HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 con.setRequestMethod("PUT");
 int responseCode = con.getResponseCode();
@@ -532,11 +556,12 @@ func main() {
     headers := map[string][]string{
         "Content-Type": []string{"application/json"},
         "Accept": []string{"application/json"},
+        "Authorization": []string{"bearer {access-token}"},
         
     }
 
     data := bytes.NewBuffer([]byte{jsonReq})
-    req, err := http.NewRequest("PUT", "///developer/me", data)
+    req, err := http.NewRequest("PUT", "http://api.saferize.com/developer/me", data)
     req.Header = headers
 
     client := &http.Client{}
@@ -556,10 +581,8 @@ Updates the developer object associated with the current session. For security r
 
 ```json
 {
-  "id": 1234,
   "firstName": "Jane",
   "lastName": "Doe",
-  "email": "jane.doe@example.com",
   "mobilePhone": "415-123-4567",
   "company": "Saferize",
   "country": "CA"
@@ -570,7 +593,12 @@ Updates the developer object associated with the current session. For security r
 
 |Parameter|In|Type|Required|Description|
 |---|---|---|---|---|
-|body|body|[Developer](#schemadeveloper)|true|The developer to be updated to.|
+|body|body|object|true|The developer properties to be updated to.|
+|» firstName|body|string|true|Developer's first name.|
+|» lastName|body|string|true|Developer's last name.|
+|» mobilePhone|body|string|true|Developer's primary mobile phone number. The format should be XXXYYYZZZZ (no dashes or parentheses).|
+|» company|body|string|false|Developer's company name.|
+|» country|body|string|false|The country in which the developer resides, or in which the company is legally established. This should be an ISO 3166-1 alpha-2 country code. For example, if you are in the United States and the business for which you're creating an account is legally represented in Canada, you would use `CA` as the country for the account being created.|
 
 > Example responses
 
@@ -596,7 +624,7 @@ Updates the developer object associated with the current session. For security r
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
-None, None ( Scopes: read write )
+BearerAuth
 </aside>
 
 ## getApps
@@ -607,27 +635,29 @@ None, None ( Scopes: read write )
 
 ```shell
 # You can also use wget
-curl -X GET ///developer/me/apps \
-  -H 'Accept: */*'
+curl -X GET http://api.saferize.com/developer/me/apps \
+  -H 'Accept: application/json' \
+  -H 'Authorization: bearer {access-token}'
 
 ```
 
 ```http
-GET ///developer/me/apps HTTP/1.1
-Host: null
+GET http://api.saferize.com/developer/me/apps HTTP/1.1
+Host: api.saferize.com
 
-Accept: */*
+Accept: application/json
 
 ```
 
 ```javascript
 var headers = {
-  'Accept':'*/*'
+  'Accept':'application/json',
+  'Authorization':'bearer {access-token}'
 
 };
 
 $.ajax({
-  url: '///developer/me/apps',
+  url: 'http://api.saferize.com/developer/me/apps',
   method: 'get',
 
   headers: headers,
@@ -642,11 +672,12 @@ $.ajax({
 const request = require('node-fetch');
 
 const headers = {
-  'Accept':'*/*'
+  'Accept':'application/json',
+  'Authorization':'bearer {access-token}'
 
 };
 
-fetch('///developer/me/apps',
+fetch('http://api.saferize.com/developer/me/apps',
 {
   method: 'GET',
 
@@ -665,10 +696,11 @@ require 'rest-client'
 require 'json'
 
 headers = {
-  'Accept' => '*/*'
+  'Accept' => 'application/json',
+  'Authorization' => 'bearer {access-token}'
 }
 
-result = RestClient.get '///developer/me/apps',
+result = RestClient.get 'http://api.saferize.com/developer/me/apps',
   params: {
   }, headers: headers
 
@@ -679,10 +711,11 @@ p JSON.parse(result)
 ```python
 import requests
 headers = {
-  'Accept': '*/*'
+  'Accept': 'application/json',
+  'Authorization': 'bearer {access-token}'
 }
 
-r = requests.get('///developer/me/apps', params={
+r = requests.get('http://api.saferize.com/developer/me/apps', params={
 
 }, headers = headers)
 
@@ -691,7 +724,7 @@ print r.json()
 ```
 
 ```java
-URL obj = new URL("///developer/me/apps");
+URL obj = new URL("http://api.saferize.com/developer/me/apps");
 HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 con.setRequestMethod("GET");
 int responseCode = con.getResponseCode();
@@ -718,12 +751,13 @@ import (
 func main() {
 
     headers := map[string][]string{
-        "Accept": []string{"*/*"},
+        "Accept": []string{"application/json"},
+        "Authorization": []string{"bearer {access-token}"},
         
     }
 
     data := bytes.NewBuffer([]byte{jsonReq})
-    req, err := http.NewRequest("GET", "///developer/me/apps", data)
+    req, err := http.NewRequest("GET", "http://api.saferize.com/developer/me/apps", data)
     req.Header = headers
 
     client := &http.Client{}
@@ -735,74 +769,48 @@ func main() {
 
 `GET /developer/me/apps`
 
-*Retreieve developer's apps*
+*Retrieve Developer's apps*
 
 Retrieves the apps associated with the developer.
 
 > Example responses
 
+```json
+[
+  {
+    "id": 1,
+    "name": "Saferize Example",
+    "platforms": [
+      "ANDROID",
+      "IOS"
+    ],
+    "category": "GAME",
+    "timeRestriction": "ENABLED",
+    "status": "PUBLISHED",
+    "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    "shortDescription": "Lorem ipsum dolor sit amet.",
+    "urlName": "string",
+    "age": 5,
+    "email": "developer@example.com"
+  }
+]
+```
+
 <h3 id="getApps-responses">Responses</h3>
 
 |Status|Meaning|Description|Schema|
 |---|---|---|---|
-|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|An array of apps|Inline|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|An array of apps|[[App]](#schemaapp)|
 |401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|No valid `Authentication` header provided.|[Error](#schemaerror)|
-
-<h3 id="getApps-responseschema">Response Schema</h3>
-
-Status Code **200**
-
-|Name|Type|Required|Description|
-|---|---|---|---|
-|*anonymous*|[[App](#schemaapp)]|false|No description|
-|» id|integer(int64)|true|Unique identifier for the app returned by the system.|
-|» name|string|true|The name of the app.|
-|» platforms|[string]|false|An array of enums that specify what platforms are supported by this app.|
-|» category|string|false|One of the predifned values indicating the category of the app.|
-|» timeRestriction|string|false|On/Off flag for enabling/disabling time restrictions on the app.|
-|» status|string|false|Current lifecycle status of the app. Please read more on the requirements for publishing the app.|
-|» description|string|false|A description of the app.|
-|» urlName|string|false|The partial url name of this app on Saferize.|
-|» details|[string]|false|Features implemented on the app.|
-|» email|string|false|The app developer's email.|
-
-#### Enumerated Values
-
-|Property|Value|
-|---|---|
-|platforms|ANDROID|
-|platforms|IOS|
-|platforms|WINDOWS|
-|platforms|MAC_OS|
-|platforms|LINUX|
-|platforms|APPLE_TV|
-|platforms|ANDROID_TV|
-|platforms|APPLE_WATCH|
-|platforms|ANDROID_WATCH|
-|platforms|XBOX|
-|platforms|NINTENDO|
-|platforms|PLAYSTATION|
-|category|GAME|
-|category|MEDIA|
-|timeRestriction|ENABLED|
-|timeRestriction|DISABLED|
-|status|DRAFT|
-|status|PUBLISHED|
-|status|DELETED|
-|details|SOCIAL_INTERACTION|
-|details|IN_APP_PURCHASES|
-|details|ADVERTISING|
-|details|PAID_APP|
-|details|SUBSCRIPTION|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
-None, None ( Scopes: read write )
+BearerAuth
 </aside>
 
 <h1 id="Saferize-API-App">App</h1>
 
-This is an object representing an App that implements Saferize. You can retreive it to see it's many properties state, configuration, platforms etc.
+This is an object representing an [App](#tocSapp) that implements Saferize. You can retrieve it to see it's many properties and [configuration](#tocSappconfig).
 
 ## createApp
 
@@ -812,15 +820,16 @@ This is an object representing an App that implements Saferize. You can retreive
 
 ```shell
 # You can also use wget
-curl -X POST ///app \
+curl -X POST http://api.saferize.com/app \
   -H 'Content-Type: application/json' \
-  -H 'Accept: application/json'
+  -H 'Accept: application/json' \
+  -H 'Authorization: bearer {access-token}'
 
 ```
 
 ```http
-POST ///app HTTP/1.1
-Host: null
+POST http://api.saferize.com/app HTTP/1.1
+Host: api.saferize.com
 Content-Type: application/json
 Accept: application/json
 
@@ -829,12 +838,13 @@ Accept: application/json
 ```javascript
 var headers = {
   'Content-Type':'application/json',
-  'Accept':'application/json'
+  'Accept':'application/json',
+  'Authorization':'bearer {access-token}'
 
 };
 
 $.ajax({
-  url: '///app',
+  url: 'http://api.saferize.com/app',
   method: 'post',
 
   headers: headers,
@@ -848,30 +858,26 @@ $.ajax({
 ```javascript--nodejs
 const request = require('node-fetch');
 const inputBody = '{
-  "id": 1,
   "name": "Saferize Example",
   "platforms": [
     "ANDROID",
     "IOS"
   ],
   "category": "GAME",
-  "timeRestriction": "ENABLED",
-  "status": "PUBLISHED",
   "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+  "shortDescription": "Lorem ipsum dolor sit amet.",
   "urlName": "string",
-  "details": [
-    "SOCIAL_INTERACTION",
-    "IN_APP_PURCHASES"
-  ],
+  "age": 5,
   "email": "developer@example.com"
 }';
 const headers = {
   'Content-Type':'application/json',
-  'Accept':'application/json'
+  'Accept':'application/json',
+  'Authorization':'bearer {access-token}'
 
 };
 
-fetch('///app',
+fetch('http://api.saferize.com/app',
 {
   method: 'POST',
   body: inputBody,
@@ -891,10 +897,11 @@ require 'json'
 
 headers = {
   'Content-Type' => 'application/json',
-  'Accept' => 'application/json'
+  'Accept' => 'application/json',
+  'Authorization' => 'bearer {access-token}'
 }
 
-result = RestClient.post '///app',
+result = RestClient.post 'http://api.saferize.com/app',
   params: {
   }, headers: headers
 
@@ -906,10 +913,11 @@ p JSON.parse(result)
 import requests
 headers = {
   'Content-Type': 'application/json',
-  'Accept': 'application/json'
+  'Accept': 'application/json',
+  'Authorization': 'bearer {access-token}'
 }
 
-r = requests.post('///app', params={
+r = requests.post('http://api.saferize.com/app', params={
 
 }, headers = headers)
 
@@ -918,7 +926,7 @@ print r.json()
 ```
 
 ```java
-URL obj = new URL("///app");
+URL obj = new URL("http://api.saferize.com/app");
 HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 con.setRequestMethod("POST");
 int responseCode = con.getResponseCode();
@@ -947,11 +955,12 @@ func main() {
     headers := map[string][]string{
         "Content-Type": []string{"application/json"},
         "Accept": []string{"application/json"},
+        "Authorization": []string{"bearer {access-token}"},
         
     }
 
     data := bytes.NewBuffer([]byte{jsonReq})
-    req, err := http.NewRequest("POST", "///app", data)
+    req, err := http.NewRequest("POST", "http://api.saferize.com/app", data)
     req.Header = headers
 
     client := &http.Client{}
@@ -963,27 +972,26 @@ func main() {
 
 `POST /app`
 
-*Create an app*
+*Create an App*
+
+With a developer account you can create apps. 
+
+Although all `App` object properties must be filled out in order to [publish](#changestatus) it, we don't expect you to have it all figured out immediately. As a matter of fact, in order to create an `App` object, the only field you need to specify is the App's `name`.
 
 > Body parameter
 
 ```json
 {
-  "id": 1,
   "name": "Saferize Example",
   "platforms": [
     "ANDROID",
     "IOS"
   ],
   "category": "GAME",
-  "timeRestriction": "ENABLED",
-  "status": "PUBLISHED",
   "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+  "shortDescription": "Lorem ipsum dolor sit amet.",
   "urlName": "string",
-  "details": [
-    "SOCIAL_INTERACTION",
-    "IN_APP_PURCHASES"
-  ],
+  "age": 5,
   "email": "developer@example.com"
 }
 ```
@@ -992,7 +1000,37 @@ func main() {
 
 |Parameter|In|Type|Required|Description|
 |---|---|---|---|---|
-|body|body|[App](#schemaapp)|true|The new app to be created.|
+|body|body|object|true|The new app to be created.|
+|» name|body|string|true|The name of the app.|
+|» platforms|body|[string]|false|An array of enums that specify what platforms are supported by this app.|
+|» category|body|string|false|One of the predifned values indicating the category of the app.|
+|» description|body|string|false|A description of the app.|
+|» shortDescription|body|string|false|A short description of the app.|
+|» urlName|body|string|false|The partial url name of this app on Saferize.|
+|» age|body|integer(int64)|false|Minimum recommended age of app users.|
+|» email|body|string|false|The app developer's email.|
+
+#### Enumerated Values
+
+|Parameter|Value|
+|---|---|
+|» platforms|ANDROID|
+|» platforms|IOS|
+|» platforms|WINDOWS|
+|» platforms|MAC_OS|
+|» platforms|LINUX|
+|» platforms|APPLE_TV|
+|» platforms|ANDROID_TV|
+|» platforms|APPLE_WATCH|
+|» platforms|ANDROID_WATCH|
+|» platforms|XBOX|
+|» platforms|NINTENDO|
+|» platforms|PLAYSTATION|
+
+|Parameter|Value|
+|---|---|
+|» category|GAME|
+|» category|MEDIA|
 
 > Example responses
 
@@ -1008,11 +1046,9 @@ func main() {
   "timeRestriction": "ENABLED",
   "status": "PUBLISHED",
   "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+  "shortDescription": "Lorem ipsum dolor sit amet.",
   "urlName": "string",
-  "details": [
-    "SOCIAL_INTERACTION",
-    "IN_APP_PURCHASES"
-  ],
+  "age": 5,
   "email": "developer@example.com"
 }
 ```
@@ -1028,610 +1064,26 @@ func main() {
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
-None, None ( Scopes: read write )
+BearerAuth
 </aside>
 
-## changeAppAttributes
+## getApp
 
-<a id="opIdchangeAppAttributes"></a>
+<a id="opIdgetApp"></a>
 
 > Code samples
 
 ```shell
 # You can also use wget
-curl -X PUT ///app \
-  -H 'Content-Type: application/json' \
-  -H 'Accept: application/json'
+curl -X GET http://api.saferize.com/app/{id} \
+  -H 'Accept: application/json' \
+  -H 'Authorization: bearer {access-token}'
 
 ```
 
 ```http
-PUT ///app HTTP/1.1
-Host: null
-Content-Type: application/json
-Accept: application/json
-
-```
-
-```javascript
-var headers = {
-  'Content-Type':'application/json',
-  'Accept':'application/json'
-
-};
-
-$.ajax({
-  url: '///app',
-  method: 'put',
-
-  headers: headers,
-  success: function(data) {
-    console.log(JSON.stringify(data));
-  }
-})
-
-```
-
-```javascript--nodejs
-const request = require('node-fetch');
-const inputBody = '{
-  "id": 1,
-  "name": "Saferize Example",
-  "platforms": [
-    "ANDROID",
-    "IOS"
-  ],
-  "category": "GAME",
-  "timeRestriction": "ENABLED",
-  "status": "PUBLISHED",
-  "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-  "urlName": "string",
-  "details": [
-    "SOCIAL_INTERACTION",
-    "IN_APP_PURCHASES"
-  ],
-  "email": "developer@example.com"
-}';
-const headers = {
-  'Content-Type':'application/json',
-  'Accept':'application/json'
-
-};
-
-fetch('///app',
-{
-  method: 'PUT',
-  body: inputBody,
-  headers: headers
-})
-.then(function(res) {
-    return res.json();
-}).then(function(body) {
-    console.log(body);
-});
-
-```
-
-```ruby
-require 'rest-client'
-require 'json'
-
-headers = {
-  'Content-Type' => 'application/json',
-  'Accept' => 'application/json'
-}
-
-result = RestClient.put '///app',
-  params: {
-  }, headers: headers
-
-p JSON.parse(result)
-
-```
-
-```python
-import requests
-headers = {
-  'Content-Type': 'application/json',
-  'Accept': 'application/json'
-}
-
-r = requests.put('///app', params={
-
-}, headers = headers)
-
-print r.json()
-
-```
-
-```java
-URL obj = new URL("///app");
-HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-con.setRequestMethod("PUT");
-int responseCode = con.getResponseCode();
-BufferedReader in = new BufferedReader(
-    new InputStreamReader(con.getInputStream()));
-String inputLine;
-StringBuffer response = new StringBuffer();
-while ((inputLine = in.readLine()) != null) {
-    response.append(inputLine);
-}
-in.close();
-System.out.println(response.toString());
-
-```
-
-```go
-package main
-
-import (
-       "bytes"
-       "net/http"
-)
-
-func main() {
-
-    headers := map[string][]string{
-        "Content-Type": []string{"application/json"},
-        "Accept": []string{"application/json"},
-        
-    }
-
-    data := bytes.NewBuffer([]byte{jsonReq})
-    req, err := http.NewRequest("PUT", "///app", data)
-    req.Header = headers
-
-    client := &http.Client{}
-    resp, err := client.Do(req)
-    // ...
-}
-
-```
-
-`PUT /app`
-
-*Changes some of the descriptive attributes of the app. Bear in mind that this endpoint does not alter the core configuration of the app.*
-
-> Body parameter
-
-```json
-{
-  "id": 1,
-  "name": "Saferize Example",
-  "platforms": [
-    "ANDROID",
-    "IOS"
-  ],
-  "category": "GAME",
-  "timeRestriction": "ENABLED",
-  "status": "PUBLISHED",
-  "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-  "urlName": "string",
-  "details": [
-    "SOCIAL_INTERACTION",
-    "IN_APP_PURCHASES"
-  ],
-  "email": "developer@example.com"
-}
-```
-
-<h3 id="changeAppAttributes-parameters">Parameters</h3>
-
-|Parameter|In|Type|Required|Description|
-|---|---|---|---|---|
-|body|body|[App](#schemaapp)|true|App fields to be updated.|
-
-> Example responses
-
-```json
-{
-  "id": 1,
-  "name": "Saferize Example",
-  "platforms": [
-    "ANDROID",
-    "IOS"
-  ],
-  "category": "GAME",
-  "timeRestriction": "ENABLED",
-  "status": "PUBLISHED",
-  "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-  "urlName": "string",
-  "details": [
-    "SOCIAL_INTERACTION",
-    "IN_APP_PURCHASES"
-  ],
-  "email": "developer@example.com"
-}
-```
-
-<h3 id="changeAppAttributes-responses">Responses</h3>
-
-|Status|Meaning|Description|Schema|
-|---|---|---|---|
-|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|The updated app.|[App](#schemaapp)|
-|400|[Bad Request](https://tools.ietf.org/html/rfc7231#section-6.5.1)|The request was unacceptable, likely due to missing a required parameter.|[Error](#schemaerror)|
-|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|No valid `Authentication` header provided.|[Error](#schemaerror)|
-|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|The specified resource was not found.|[Error](#schemaerror)|
-
-<aside class="warning">
-To perform this operation, you must be authenticated by means of one of the following methods:
-None, None ( Scopes: read write )
-</aside>
-
-## createKey
-
-<a id="opIdcreateKey"></a>
-
-> Code samples
-
-```shell
-# You can also use wget
-curl -X POST ///app/{id}/key \
-  -H 'Content-Type: application/json' \
-  -H 'Accept: application/json'
-
-```
-
-```http
-POST ///app/{id}/key HTTP/1.1
-Host: null
-Content-Type: application/json
-Accept: application/json
-
-```
-
-```javascript
-var headers = {
-  'Content-Type':'application/json',
-  'Accept':'application/json'
-
-};
-
-$.ajax({
-  url: '///app/{id}/key',
-  method: 'post',
-
-  headers: headers,
-  success: function(data) {
-    console.log(JSON.stringify(data));
-  }
-})
-
-```
-
-```javascript--nodejs
-const request = require('node-fetch');
-const inputBody = '-----BEGIN PUBLIC KEY----- MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEApofmdG+zACt1kHNlQciwyg3DuRW5za33FuBH+Zb8JoixthvtZNgee6+TkbCEWGmC9+cIJLTnialKdDUxlr5JpCtJnIpaiD++Ic5AINpE0zqhD4obR8eN7m5lcKGuNwShFxB/lc+IFHeEf5MkPcU+nSkJIV74F0XJIqNeewGxNayJ/bbIuOS4gMI0/lU18ua3OsLvVmJZyXObiYq3nMfSwWKuhfLqRMSSfICEDjnVAq3+F8/lxoqAxbC0gFZC3CdOjINgMJYr3XY6fo9oAkrt4yjSO9kAqQxaHiLqJ87gjjQEKaBzlejTM3/iJBamQUCF3VPZ3y7AoSCEWBEA5xhvXQIDAQAB -----END PUBLIC KEY-----';
-const headers = {
-  'Content-Type':'application/json',
-  'Accept':'application/json'
-
-};
-
-fetch('///app/{id}/key',
-{
-  method: 'POST',
-  body: inputBody,
-  headers: headers
-})
-.then(function(res) {
-    return res.json();
-}).then(function(body) {
-    console.log(body);
-});
-
-```
-
-```ruby
-require 'rest-client'
-require 'json'
-
-headers = {
-  'Content-Type' => 'application/json',
-  'Accept' => 'application/json'
-}
-
-result = RestClient.post '///app/{id}/key',
-  params: {
-  }, headers: headers
-
-p JSON.parse(result)
-
-```
-
-```python
-import requests
-headers = {
-  'Content-Type': 'application/json',
-  'Accept': 'application/json'
-}
-
-r = requests.post('///app/{id}/key', params={
-
-}, headers = headers)
-
-print r.json()
-
-```
-
-```java
-URL obj = new URL("///app/{id}/key");
-HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-con.setRequestMethod("POST");
-int responseCode = con.getResponseCode();
-BufferedReader in = new BufferedReader(
-    new InputStreamReader(con.getInputStream()));
-String inputLine;
-StringBuffer response = new StringBuffer();
-while ((inputLine = in.readLine()) != null) {
-    response.append(inputLine);
-}
-in.close();
-System.out.println(response.toString());
-
-```
-
-```go
-package main
-
-import (
-       "bytes"
-       "net/http"
-)
-
-func main() {
-
-    headers := map[string][]string{
-        "Content-Type": []string{"application/json"},
-        "Accept": []string{"application/json"},
-        
-    }
-
-    data := bytes.NewBuffer([]byte{jsonReq})
-    req, err := http.NewRequest("POST", "///app/{id}/key", data)
-    req.Header = headers
-
-    client := &http.Client{}
-    resp, err := client.Do(req)
-    // ...
-}
-
-```
-
-`POST /app/{id}/key`
-
-*Authenticate an app*
-
-Authenticate your app by using a public-key authentication. Your apps' keys carry many privileges, so be sure to keep your private key secret! Do not share your private keys in publicly accessible areas such GitHub, client-side code, and so forth.
-
-> Body parameter
-
-```json
-"-----BEGIN PUBLIC KEY----- MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEApofmdG+zACt1kHNlQciwyg3DuRW5za33FuBH+Zb8JoixthvtZNgee6+TkbCEWGmC9+cIJLTnialKdDUxlr5JpCtJnIpaiD++Ic5AINpE0zqhD4obR8eN7m5lcKGuNwShFxB/lc+IFHeEf5MkPcU+nSkJIV74F0XJIqNeewGxNayJ/bbIuOS4gMI0/lU18ua3OsLvVmJZyXObiYq3nMfSwWKuhfLqRMSSfICEDjnVAq3+F8/lxoqAxbC0gFZC3CdOjINgMJYr3XY6fo9oAkrt4yjSO9kAqQxaHiLqJ87gjjQEKaBzlejTM3/iJBamQUCF3VPZ3y7AoSCEWBEA5xhvXQIDAQAB -----END PUBLIC KEY-----"
-```
-
-<h3 id="createKey-parameters">Parameters</h3>
-
-|Parameter|In|Type|Required|Description|
-|---|---|---|---|---|
-|id|path|integer(int64)|true|Unique identifier for the app.|
-|body|body|[createKeyPublicKey](#schemacreatekeypublickey)|true|RSA public key.|
-
-> Example responses
-
-```json
-"031e58c6-a92c-453d-920d-33ad279392de"
-```
-
-<h3 id="createKey-responses">Responses</h3>
-
-|Status|Meaning|Description|Schema|
-|---|---|---|---|
-|201|[Created](https://tools.ietf.org/html/rfc7231#section-6.3.2)|Returns the newly created access key if the public key was valid.|string|
-|400|[Bad Request](https://tools.ietf.org/html/rfc7231#section-6.5.1)|The request was unacceptable, likely due to missing a required parameter.|[Error](#schemaerror)|
-|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|No valid `Authentication` header provided.|[Error](#schemaerror)|
-|409|[Conflict](https://tools.ietf.org/html/rfc7231#section-6.5.8)|The request conflicts with another request|[Error](#schemaerror)|
-
-<aside class="warning">
-To perform this operation, you must be authenticated by means of one of the following methods:
-None, None ( Scopes: read write )
-</aside>
-
-## rollKey
-
-<a id="opIdrollKey"></a>
-
-> Code samples
-
-```shell
-# You can also use wget
-curl -X PUT ///app/{id}/key \
-  -H 'Content-Type: application/json' \
-  -H 'Accept: application/json'
-
-```
-
-```http
-PUT ///app/{id}/key HTTP/1.1
-Host: null
-Content-Type: application/json
-Accept: application/json
-
-```
-
-```javascript
-var headers = {
-  'Content-Type':'application/json',
-  'Accept':'application/json'
-
-};
-
-$.ajax({
-  url: '///app/{id}/key',
-  method: 'put',
-
-  headers: headers,
-  success: function(data) {
-    console.log(JSON.stringify(data));
-  }
-})
-
-```
-
-```javascript--nodejs
-const request = require('node-fetch');
-const inputBody = '-----BEGIN PUBLIC KEY----- MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEApofmdG+zACt1kHNlQciwyg3DuRW5za33FuBH+Zb8JoixthvtZNgee6+TkbCEWGmC9+cIJLTnialKdDUxlr5JpCtJnIpaiD++Ic5AINpE0zqhD4obR8eN7m5lcKGuNwShFxB/lc+IFHeEf5MkPcU+nSkJIV74F0XJIqNeewGxNayJ/bbIuOS4gMI0/lU18ua3OsLvVmJZyXObiYq3nMfSwWKuhfLqRMSSfICEDjnVAq3+F8/lxoqAxbC0gFZC3CdOjINgMJYr3XY6fo9oAkrt4yjSO9kAqQxaHiLqJ87gjjQEKaBzlejTM3/iJBamQUCF3VPZ3y7AoSCEWBEA5xhvXQIDAQAB -----END PUBLIC KEY-----';
-const headers = {
-  'Content-Type':'application/json',
-  'Accept':'application/json'
-
-};
-
-fetch('///app/{id}/key',
-{
-  method: 'PUT',
-  body: inputBody,
-  headers: headers
-})
-.then(function(res) {
-    return res.json();
-}).then(function(body) {
-    console.log(body);
-});
-
-```
-
-```ruby
-require 'rest-client'
-require 'json'
-
-headers = {
-  'Content-Type' => 'application/json',
-  'Accept' => 'application/json'
-}
-
-result = RestClient.put '///app/{id}/key',
-  params: {
-  }, headers: headers
-
-p JSON.parse(result)
-
-```
-
-```python
-import requests
-headers = {
-  'Content-Type': 'application/json',
-  'Accept': 'application/json'
-}
-
-r = requests.put('///app/{id}/key', params={
-
-}, headers = headers)
-
-print r.json()
-
-```
-
-```java
-URL obj = new URL("///app/{id}/key");
-HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-con.setRequestMethod("PUT");
-int responseCode = con.getResponseCode();
-BufferedReader in = new BufferedReader(
-    new InputStreamReader(con.getInputStream()));
-String inputLine;
-StringBuffer response = new StringBuffer();
-while ((inputLine = in.readLine()) != null) {
-    response.append(inputLine);
-}
-in.close();
-System.out.println(response.toString());
-
-```
-
-```go
-package main
-
-import (
-       "bytes"
-       "net/http"
-)
-
-func main() {
-
-    headers := map[string][]string{
-        "Content-Type": []string{"application/json"},
-        "Accept": []string{"application/json"},
-        
-    }
-
-    data := bytes.NewBuffer([]byte{jsonReq})
-    req, err := http.NewRequest("PUT", "///app/{id}/key", data)
-    req.Header = headers
-
-    client := &http.Client{}
-    resp, err := client.Do(req)
-    // ...
-}
-
-```
-
-`PUT /app/{id}/key`
-
-*Roll app authentication*
-
-If you believe your key is compromised, roll the key with a newly generated public key.
-
-> Body parameter
-
-```json
-"-----BEGIN PUBLIC KEY----- MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEApofmdG+zACt1kHNlQciwyg3DuRW5za33FuBH+Zb8JoixthvtZNgee6+TkbCEWGmC9+cIJLTnialKdDUxlr5JpCtJnIpaiD++Ic5AINpE0zqhD4obR8eN7m5lcKGuNwShFxB/lc+IFHeEf5MkPcU+nSkJIV74F0XJIqNeewGxNayJ/bbIuOS4gMI0/lU18ua3OsLvVmJZyXObiYq3nMfSwWKuhfLqRMSSfICEDjnVAq3+F8/lxoqAxbC0gFZC3CdOjINgMJYr3XY6fo9oAkrt4yjSO9kAqQxaHiLqJ87gjjQEKaBzlejTM3/iJBamQUCF3VPZ3y7AoSCEWBEA5xhvXQIDAQAB -----END PUBLIC KEY-----"
-```
-
-<h3 id="rollKey-parameters">Parameters</h3>
-
-|Parameter|In|Type|Required|Description|
-|---|---|---|---|---|
-|id|path|integer(int64)|true|Unique identifier for the app.|
-|body|body|[createKeyPublicKey](#schemacreatekeypublickey)|true|RSA public key.|
-
-> Example responses
-
-```json
-"031e58c6-a92c-453d-920d-33ad279392de"
-```
-
-<h3 id="rollKey-responses">Responses</h3>
-
-|Status|Meaning|Description|Schema|
-|---|---|---|---|
-|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Returns the access key if the public key was valid.|string|
-|400|[Bad Request](https://tools.ietf.org/html/rfc7231#section-6.5.1)|The request was unacceptable, likely due to missing a required parameter.|[Error](#schemaerror)|
-|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|No valid `Authentication` header provided.|[Error](#schemaerror)|
-|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|The specified resource was not found.|[Error](#schemaerror)|
-
-<aside class="warning">
-To perform this operation, you must be authenticated by means of one of the following methods:
-None, None ( Scopes: read write )
-</aside>
-
-## getAppBy
-
-<a id="opIdgetAppBy"></a>
-
-> Code samples
-
-```shell
-# You can also use wget
-curl -X GET ///app/{id} \
-  -H 'Accept: application/json'
-
-```
-
-```http
-GET ///app/{id} HTTP/1.1
-Host: null
+GET http://api.saferize.com/app/{id} HTTP/1.1
+Host: api.saferize.com
 
 Accept: application/json
 
@@ -1639,12 +1091,13 @@ Accept: application/json
 
 ```javascript
 var headers = {
-  'Accept':'application/json'
+  'Accept':'application/json',
+  'Authorization':'bearer {access-token}'
 
 };
 
 $.ajax({
-  url: '///app/{id}',
+  url: 'http://api.saferize.com/app/{id}',
   method: 'get',
 
   headers: headers,
@@ -1659,11 +1112,12 @@ $.ajax({
 const request = require('node-fetch');
 
 const headers = {
-  'Accept':'application/json'
+  'Accept':'application/json',
+  'Authorization':'bearer {access-token}'
 
 };
 
-fetch('///app/{id}',
+fetch('http://api.saferize.com/app/{id}',
 {
   method: 'GET',
 
@@ -1682,10 +1136,11 @@ require 'rest-client'
 require 'json'
 
 headers = {
-  'Accept' => 'application/json'
+  'Accept' => 'application/json',
+  'Authorization' => 'bearer {access-token}'
 }
 
-result = RestClient.get '///app/{id}',
+result = RestClient.get 'http://api.saferize.com/app/{id}',
   params: {
   }, headers: headers
 
@@ -1696,10 +1151,11 @@ p JSON.parse(result)
 ```python
 import requests
 headers = {
-  'Accept': 'application/json'
+  'Accept': 'application/json',
+  'Authorization': 'bearer {access-token}'
 }
 
-r = requests.get('///app/{id}', params={
+r = requests.get('http://api.saferize.com/app/{id}', params={
 
 }, headers = headers)
 
@@ -1708,7 +1164,7 @@ print r.json()
 ```
 
 ```java
-URL obj = new URL("///app/{id}");
+URL obj = new URL("http://api.saferize.com/app/{id}");
 HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 con.setRequestMethod("GET");
 int responseCode = con.getResponseCode();
@@ -1736,11 +1192,12 @@ func main() {
 
     headers := map[string][]string{
         "Accept": []string{"application/json"},
+        "Authorization": []string{"bearer {access-token}"},
         
     }
 
     data := bytes.NewBuffer([]byte{jsonReq})
-    req, err := http.NewRequest("GET", "///app/{id}", data)
+    req, err := http.NewRequest("GET", "http://api.saferize.com/app/{id}", data)
     req.Header = headers
 
     client := &http.Client{}
@@ -1752,9 +1209,11 @@ func main() {
 
 `GET /app/{id}`
 
-*Retrieve an app*
+*Retrieve an App*
 
-<h3 id="getAppBy-parameters">Parameters</h3>
+Retrieves the app object associated with the id.
+
+<h3 id="getApp-parameters">Parameters</h3>
 
 |Parameter|In|Type|Required|Description|
 |---|---|---|---|---|
@@ -1774,26 +1233,650 @@ func main() {
   "timeRestriction": "ENABLED",
   "status": "PUBLISHED",
   "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+  "shortDescription": "Lorem ipsum dolor sit amet.",
   "urlName": "string",
-  "details": [
-    "SOCIAL_INTERACTION",
-    "IN_APP_PURCHASES"
-  ],
+  "age": 5,
   "email": "developer@example.com"
 }
 ```
 
-<h3 id="getAppBy-responses">Responses</h3>
+<h3 id="getApp-responses">Responses</h3>
 
 |Status|Meaning|Description|Schema|
 |---|---|---|---|
-|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Returns the app object.|[App](#schemaapp)|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Returns the app object associated with the id.|[App](#schemaapp)|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|No valid `Authentication` header provided.|[Error](#schemaerror)|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|The specified resource was not found.|[Error](#schemaerror)|
+
+<aside class="success">
+This operation does not require authentication
+</aside>
+
+## changeAppAttributes
+
+<a id="opIdchangeAppAttributes"></a>
+
+> Code samples
+
+```shell
+# You can also use wget
+curl -X PUT http://api.saferize.com/app/{id} \
+  -H 'Content-Type: application/json' \
+  -H 'Accept: application/json' \
+  -H 'Authorization: bearer {access-token}'
+
+```
+
+```http
+PUT http://api.saferize.com/app/{id} HTTP/1.1
+Host: api.saferize.com
+Content-Type: application/json
+Accept: application/json
+
+```
+
+```javascript
+var headers = {
+  'Content-Type':'application/json',
+  'Accept':'application/json',
+  'Authorization':'bearer {access-token}'
+
+};
+
+$.ajax({
+  url: 'http://api.saferize.com/app/{id}',
+  method: 'put',
+
+  headers: headers,
+  success: function(data) {
+    console.log(JSON.stringify(data));
+  }
+})
+
+```
+
+```javascript--nodejs
+const request = require('node-fetch');
+const inputBody = '{
+  "name": "Saferize Example Changed",
+  "platforms": [
+    "MAC_OS",
+    "IOS"
+  ],
+  "category": "MEDIA",
+  "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+  "shortDescription": "Lorem ipsum dolor sit amet.",
+  "urlName": "string",
+  "age": 4,
+  "email": "developer@example.com"
+}';
+const headers = {
+  'Content-Type':'application/json',
+  'Accept':'application/json',
+  'Authorization':'bearer {access-token}'
+
+};
+
+fetch('http://api.saferize.com/app/{id}',
+{
+  method: 'PUT',
+  body: inputBody,
+  headers: headers
+})
+.then(function(res) {
+    return res.json();
+}).then(function(body) {
+    console.log(body);
+});
+
+```
+
+```ruby
+require 'rest-client'
+require 'json'
+
+headers = {
+  'Content-Type' => 'application/json',
+  'Accept' => 'application/json',
+  'Authorization' => 'bearer {access-token}'
+}
+
+result = RestClient.put 'http://api.saferize.com/app/{id}',
+  params: {
+  }, headers: headers
+
+p JSON.parse(result)
+
+```
+
+```python
+import requests
+headers = {
+  'Content-Type': 'application/json',
+  'Accept': 'application/json',
+  'Authorization': 'bearer {access-token}'
+}
+
+r = requests.put('http://api.saferize.com/app/{id}', params={
+
+}, headers = headers)
+
+print r.json()
+
+```
+
+```java
+URL obj = new URL("http://api.saferize.com/app/{id}");
+HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+con.setRequestMethod("PUT");
+int responseCode = con.getResponseCode();
+BufferedReader in = new BufferedReader(
+    new InputStreamReader(con.getInputStream()));
+String inputLine;
+StringBuffer response = new StringBuffer();
+while ((inputLine = in.readLine()) != null) {
+    response.append(inputLine);
+}
+in.close();
+System.out.println(response.toString());
+
+```
+
+```go
+package main
+
+import (
+       "bytes"
+       "net/http"
+)
+
+func main() {
+
+    headers := map[string][]string{
+        "Content-Type": []string{"application/json"},
+        "Accept": []string{"application/json"},
+        "Authorization": []string{"bearer {access-token}"},
+        
+    }
+
+    data := bytes.NewBuffer([]byte{jsonReq})
+    req, err := http.NewRequest("PUT", "http://api.saferize.com/app/{id}", data)
+    req.Header = headers
+
+    client := &http.Client{}
+    resp, err := client.Do(req)
+    // ...
+}
+
+```
+
+`PUT /app/{id}`
+
+*Change App's attributes*
+
+Changes the descriptive attributes of the app by setting the values of the parameters passed. Bear in mind that this endpoint does not alter the core configuration of the app.
+Any parameters not provided will be changed to `null`.
+
+> Body parameter
+
+```json
+{
+  "name": "Saferize Example Changed",
+  "platforms": [
+    "MAC_OS",
+    "IOS"
+  ],
+  "category": "MEDIA",
+  "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+  "shortDescription": "Lorem ipsum dolor sit amet.",
+  "urlName": "string",
+  "age": 4,
+  "email": "developer@example.com"
+}
+```
+
+<h3 id="changeAppAttributes-parameters">Parameters</h3>
+
+|Parameter|In|Type|Required|Description|
+|---|---|---|---|---|
+|body|body|object|true|App fields to be updated.|
+|» name|body|string|true|The name of the app.|
+|» platforms|body|[string]|false|An array of enums that specify what platforms are supported by this app.|
+|» category|body|string|false|One of the predifned values indicating the category of the app.|
+|» description|body|string|false|A description of the app.|
+|» shortDescription|body|string|false|A short description of the app.|
+|» urlName|body|string|false|The partial url name of this app on Saferize.|
+|» age|body|integer(int64)|false|Minimum recommended age of app users.|
+|» email|body|string|false|The app developer's email.|
+
+#### Enumerated Values
+
+|Parameter|Value|
+|---|---|
+|» platforms|ANDROID|
+|» platforms|IOS|
+|» platforms|WINDOWS|
+|» platforms|MAC_OS|
+|» platforms|LINUX|
+|» platforms|APPLE_TV|
+|» platforms|ANDROID_TV|
+|» platforms|APPLE_WATCH|
+|» platforms|ANDROID_WATCH|
+|» platforms|XBOX|
+|» platforms|NINTENDO|
+|» platforms|PLAYSTATION|
+|» category|GAME|
+|» category|MEDIA|
+
+> Example responses
+
+```json
+{
+  "id": 1,
+  "name": "Saferize Example",
+  "platforms": [
+    "ANDROID",
+    "IOS"
+  ],
+  "category": "GAME",
+  "timeRestriction": "ENABLED",
+  "status": "PUBLISHED",
+  "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+  "shortDescription": "Lorem ipsum dolor sit amet.",
+  "urlName": "string",
+  "age": 5,
+  "email": "developer@example.com"
+}
+```
+
+<h3 id="changeAppAttributes-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|The updated app.|[App](#schemaapp)|
+|400|[Bad Request](https://tools.ietf.org/html/rfc7231#section-6.5.1)|The request was unacceptable, likely due to missing a required parameter.|[Error](#schemaerror)|
 |401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|No valid `Authentication` header provided.|[Error](#schemaerror)|
 |404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|The specified resource was not found.|[Error](#schemaerror)|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
-None, None ( Scopes: read write )
+BearerAuth
+</aside>
+
+## createKey
+
+<a id="opIdcreateKey"></a>
+
+> Code samples
+
+```shell
+# You can also use wget
+curl -X POST http://api.saferize.com/app/{id}/key \
+  -H 'Content-Type: application/json' \
+  -H 'Accept: application/json' \
+  -H 'Authorization: bearer {access-token}'
+
+```
+
+```http
+POST http://api.saferize.com/app/{id}/key HTTP/1.1
+Host: api.saferize.com
+Content-Type: application/json
+Accept: application/json
+
+```
+
+```javascript
+var headers = {
+  'Content-Type':'application/json',
+  'Accept':'application/json',
+  'Authorization':'bearer {access-token}'
+
+};
+
+$.ajax({
+  url: 'http://api.saferize.com/app/{id}/key',
+  method: 'post',
+
+  headers: headers,
+  success: function(data) {
+    console.log(JSON.stringify(data));
+  }
+})
+
+```
+
+```javascript--nodejs
+const request = require('node-fetch');
+const inputBody = '-----BEGIN PUBLIC KEY----- MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEApofmdG+zACt1kHNlQciwyg3DuRW5za33FuBH+Zb8JoixthvtZNgee6+TkbCEWGmC9+cIJLTnialKdDUxlr5JpCtJnIpaiD++Ic5AINpE0zqhD4obR8eN7m5lcKGuNwShFxB/lc+IFHeEf5MkPcU+nSkJIV74F0XJIqNeewGxNayJ/bbIuOS4gMI0/lU18ua3OsLvVmJZyXObiYq3nMfSwWKuhfLqRMSSfICEDjnVAq3+F8/lxoqAxbC0gFZC3CdOjINgMJYr3XY6fo9oAkrt4yjSO9kAqQxaHiLqJ87gjjQEKaBzlejTM3/iJBamQUCF3VPZ3y7AoSCEWBEA5xhvXQIDAQAB -----END PUBLIC KEY-----';
+const headers = {
+  'Content-Type':'application/json',
+  'Accept':'application/json',
+  'Authorization':'bearer {access-token}'
+
+};
+
+fetch('http://api.saferize.com/app/{id}/key',
+{
+  method: 'POST',
+  body: inputBody,
+  headers: headers
+})
+.then(function(res) {
+    return res.json();
+}).then(function(body) {
+    console.log(body);
+});
+
+```
+
+```ruby
+require 'rest-client'
+require 'json'
+
+headers = {
+  'Content-Type' => 'application/json',
+  'Accept' => 'application/json',
+  'Authorization' => 'bearer {access-token}'
+}
+
+result = RestClient.post 'http://api.saferize.com/app/{id}/key',
+  params: {
+  }, headers: headers
+
+p JSON.parse(result)
+
+```
+
+```python
+import requests
+headers = {
+  'Content-Type': 'application/json',
+  'Accept': 'application/json',
+  'Authorization': 'bearer {access-token}'
+}
+
+r = requests.post('http://api.saferize.com/app/{id}/key', params={
+
+}, headers = headers)
+
+print r.json()
+
+```
+
+```java
+URL obj = new URL("http://api.saferize.com/app/{id}/key");
+HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+con.setRequestMethod("POST");
+int responseCode = con.getResponseCode();
+BufferedReader in = new BufferedReader(
+    new InputStreamReader(con.getInputStream()));
+String inputLine;
+StringBuffer response = new StringBuffer();
+while ((inputLine = in.readLine()) != null) {
+    response.append(inputLine);
+}
+in.close();
+System.out.println(response.toString());
+
+```
+
+```go
+package main
+
+import (
+       "bytes"
+       "net/http"
+)
+
+func main() {
+
+    headers := map[string][]string{
+        "Content-Type": []string{"application/json"},
+        "Accept": []string{"application/json"},
+        "Authorization": []string{"bearer {access-token}"},
+        
+    }
+
+    data := bytes.NewBuffer([]byte{jsonReq})
+    req, err := http.NewRequest("POST", "http://api.saferize.com/app/{id}/key", data)
+    req.Header = headers
+
+    client := &http.Client{}
+    resp, err := client.Do(req)
+    // ...
+}
+
+```
+
+`POST /app/{id}/key`
+
+*Create a Key to authenticate an App*
+
+To be able to use your app your app, you must authenticate your app by using a public-key authentication scheme (we only allows RSA encryption).  Please take a look at [how to generate a private-public key set](https://en.wikibooks.org/wiki/Cryptography/Generate_a_keypair_using_OpenSSL).
+
+Your apps' keys carry many privileges, so be sure to keep your private key secret! Do not share your private keys in publicly accessible areas such GitHub, client-side code, and so forth.
+
+The returned access key is a piece of your login credential and will be used to generate a Json Web Token in order for your app to interact with our platform.
+
+> Body parameter
+
+```json
+"-----BEGIN PUBLIC KEY----- MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEApofmdG+zACt1kHNlQciwyg3DuRW5za33FuBH+Zb8JoixthvtZNgee6+TkbCEWGmC9+cIJLTnialKdDUxlr5JpCtJnIpaiD++Ic5AINpE0zqhD4obR8eN7m5lcKGuNwShFxB/lc+IFHeEf5MkPcU+nSkJIV74F0XJIqNeewGxNayJ/bbIuOS4gMI0/lU18ua3OsLvVmJZyXObiYq3nMfSwWKuhfLqRMSSfICEDjnVAq3+F8/lxoqAxbC0gFZC3CdOjINgMJYr3XY6fo9oAkrt4yjSO9kAqQxaHiLqJ87gjjQEKaBzlejTM3/iJBamQUCF3VPZ3y7AoSCEWBEA5xhvXQIDAQAB -----END PUBLIC KEY-----"
+```
+
+<h3 id="createKey-parameters">Parameters</h3>
+
+|Parameter|In|Type|Required|Description|
+|---|---|---|---|---|
+|id|path|integer(int64)|true|Unique identifier for the app.|
+|body|body|[RSAPublicKey](#schemarsapublickey)|true|RSA public key.|
+
+> Example responses
+
+```json
+"031e58c6-a92c-453d-920d-33ad279392de"
+```
+
+<h3 id="createKey-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|201|[Created](https://tools.ietf.org/html/rfc7231#section-6.3.2)|Returns the newly created access key if the public key was valid.|string|
+|400|[Bad Request](https://tools.ietf.org/html/rfc7231#section-6.5.1)|The request was unacceptable, likely due to missing a required parameter.|[Error](#schemaerror)|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|No valid `Authentication` header provided.|[Error](#schemaerror)|
+|409|[Conflict](https://tools.ietf.org/html/rfc7231#section-6.5.8)|The request conflicts with another request|[Error](#schemaerror)|
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+BearerAuth
+</aside>
+
+## rollKey
+
+<a id="opIdrollKey"></a>
+
+> Code samples
+
+```shell
+# You can also use wget
+curl -X PUT http://api.saferize.com/app/{id}/key \
+  -H 'Content-Type: application/json' \
+  -H 'Accept: application/json' \
+  -H 'Authorization: bearer {access-token}'
+
+```
+
+```http
+PUT http://api.saferize.com/app/{id}/key HTTP/1.1
+Host: api.saferize.com
+Content-Type: application/json
+Accept: application/json
+
+```
+
+```javascript
+var headers = {
+  'Content-Type':'application/json',
+  'Accept':'application/json',
+  'Authorization':'bearer {access-token}'
+
+};
+
+$.ajax({
+  url: 'http://api.saferize.com/app/{id}/key',
+  method: 'put',
+
+  headers: headers,
+  success: function(data) {
+    console.log(JSON.stringify(data));
+  }
+})
+
+```
+
+```javascript--nodejs
+const request = require('node-fetch');
+const inputBody = '-----BEGIN PUBLIC KEY----- MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEApofmdG+zACt1kHNlQciwyg3DuRW5za33FuBH+Zb8JoixthvtZNgee6+TkbCEWGmC9+cIJLTnialKdDUxlr5JpCtJnIpaiD++Ic5AINpE0zqhD4obR8eN7m5lcKGuNwShFxB/lc+IFHeEf5MkPcU+nSkJIV74F0XJIqNeewGxNayJ/bbIuOS4gMI0/lU18ua3OsLvVmJZyXObiYq3nMfSwWKuhfLqRMSSfICEDjnVAq3+F8/lxoqAxbC0gFZC3CdOjINgMJYr3XY6fo9oAkrt4yjSO9kAqQxaHiLqJ87gjjQEKaBzlejTM3/iJBamQUCF3VPZ3y7AoSCEWBEA5xhvXQIDAQAB -----END PUBLIC KEY-----';
+const headers = {
+  'Content-Type':'application/json',
+  'Accept':'application/json',
+  'Authorization':'bearer {access-token}'
+
+};
+
+fetch('http://api.saferize.com/app/{id}/key',
+{
+  method: 'PUT',
+  body: inputBody,
+  headers: headers
+})
+.then(function(res) {
+    return res.json();
+}).then(function(body) {
+    console.log(body);
+});
+
+```
+
+```ruby
+require 'rest-client'
+require 'json'
+
+headers = {
+  'Content-Type' => 'application/json',
+  'Accept' => 'application/json',
+  'Authorization' => 'bearer {access-token}'
+}
+
+result = RestClient.put 'http://api.saferize.com/app/{id}/key',
+  params: {
+  }, headers: headers
+
+p JSON.parse(result)
+
+```
+
+```python
+import requests
+headers = {
+  'Content-Type': 'application/json',
+  'Accept': 'application/json',
+  'Authorization': 'bearer {access-token}'
+}
+
+r = requests.put('http://api.saferize.com/app/{id}/key', params={
+
+}, headers = headers)
+
+print r.json()
+
+```
+
+```java
+URL obj = new URL("http://api.saferize.com/app/{id}/key");
+HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+con.setRequestMethod("PUT");
+int responseCode = con.getResponseCode();
+BufferedReader in = new BufferedReader(
+    new InputStreamReader(con.getInputStream()));
+String inputLine;
+StringBuffer response = new StringBuffer();
+while ((inputLine = in.readLine()) != null) {
+    response.append(inputLine);
+}
+in.close();
+System.out.println(response.toString());
+
+```
+
+```go
+package main
+
+import (
+       "bytes"
+       "net/http"
+)
+
+func main() {
+
+    headers := map[string][]string{
+        "Content-Type": []string{"application/json"},
+        "Accept": []string{"application/json"},
+        "Authorization": []string{"bearer {access-token}"},
+        
+    }
+
+    data := bytes.NewBuffer([]byte{jsonReq})
+    req, err := http.NewRequest("PUT", "http://api.saferize.com/app/{id}/key", data)
+    req.Header = headers
+
+    client := &http.Client{}
+    resp, err := client.Do(req)
+    // ...
+}
+
+```
+
+`PUT /app/{id}/key`
+
+*Roll the Key that authenticates an App*
+
+If you believe your key has been compromised, roll the key with a newly generated public key.
+
+Although your access key will remain the same, you will NOT be able to use your old public key any longer. For this reason, make sure you have your corresponding private key stored safely.
+
+> Body parameter
+
+```json
+"-----BEGIN PUBLIC KEY----- MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEApofmdG+zACt1kHNlQciwyg3DuRW5za33FuBH+Zb8JoixthvtZNgee6+TkbCEWGmC9+cIJLTnialKdDUxlr5JpCtJnIpaiD++Ic5AINpE0zqhD4obR8eN7m5lcKGuNwShFxB/lc+IFHeEf5MkPcU+nSkJIV74F0XJIqNeewGxNayJ/bbIuOS4gMI0/lU18ua3OsLvVmJZyXObiYq3nMfSwWKuhfLqRMSSfICEDjnVAq3+F8/lxoqAxbC0gFZC3CdOjINgMJYr3XY6fo9oAkrt4yjSO9kAqQxaHiLqJ87gjjQEKaBzlejTM3/iJBamQUCF3VPZ3y7AoSCEWBEA5xhvXQIDAQAB -----END PUBLIC KEY-----"
+```
+
+<h3 id="rollKey-parameters">Parameters</h3>
+
+|Parameter|In|Type|Required|Description|
+|---|---|---|---|---|
+|id|path|integer(int64)|true|Unique identifier for the app.|
+|body|body|[RSAPublicKey](#schemarsapublickey)|true|RSA public key.|
+
+> Example responses
+
+```json
+"031e58c6-a92c-453d-920d-33ad279392de"
+```
+
+<h3 id="rollKey-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Returns the access key if the public key was valid.|string|
+|400|[Bad Request](https://tools.ietf.org/html/rfc7231#section-6.5.1)|The request was unacceptable, likely due to missing a required parameter.|[Error](#schemaerror)|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|No valid `Authentication` header provided.|[Error](#schemaerror)|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|The specified resource was not found.|[Error](#schemaerror)|
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+BearerAuth
 </aside>
 
 ## changeTimeRestriction
@@ -1804,15 +1887,16 @@ None, None ( Scopes: read write )
 
 ```shell
 # You can also use wget
-curl -X PATCH ///app/{id}[timeRestriction]* \
+curl -X PATCH http://api.saferize.com/app/{id} \
   -H 'Content-Type: application/json' \
-  -H 'Accept: application/json'
+  -H 'Accept: application/json' \
+  -H 'Authorization: bearer {access-token}'
 
 ```
 
 ```http
-PATCH ///app/{id}[timeRestriction]* HTTP/1.1
-Host: null
+PATCH http://api.saferize.com/app/{id} HTTP/1.1
+Host: api.saferize.com
 Content-Type: application/json
 Accept: application/json
 
@@ -1821,12 +1905,13 @@ Accept: application/json
 ```javascript
 var headers = {
   'Content-Type':'application/json',
-  'Accept':'application/json'
+  'Accept':'application/json',
+  'Authorization':'bearer {access-token}'
 
 };
 
 $.ajax({
-  url: '///app/{id}[timeRestriction]*',
+  url: 'http://api.saferize.com/app/{id}',
   method: 'patch',
 
   headers: headers,
@@ -1842,15 +1927,16 @@ const request = require('node-fetch');
 const inputBody = '{
   "op": "replace",
   "path": "/status",
-  "value": {}
+  "value": "PUBLISHED"
 }';
 const headers = {
   'Content-Type':'application/json',
-  'Accept':'application/json'
+  'Accept':'application/json',
+  'Authorization':'bearer {access-token}'
 
 };
 
-fetch('///app/{id}[timeRestriction]*',
+fetch('http://api.saferize.com/app/{id}',
 {
   method: 'PATCH',
   body: inputBody,
@@ -1870,10 +1956,11 @@ require 'json'
 
 headers = {
   'Content-Type' => 'application/json',
-  'Accept' => 'application/json'
+  'Accept' => 'application/json',
+  'Authorization' => 'bearer {access-token}'
 }
 
-result = RestClient.patch '///app/{id}[timeRestriction]*',
+result = RestClient.patch 'http://api.saferize.com/app/{id}',
   params: {
   }, headers: headers
 
@@ -1885,10 +1972,11 @@ p JSON.parse(result)
 import requests
 headers = {
   'Content-Type': 'application/json',
-  'Accept': 'application/json'
+  'Accept': 'application/json',
+  'Authorization': 'bearer {access-token}'
 }
 
-r = requests.patch('///app/{id}[timeRestriction]*', params={
+r = requests.patch('http://api.saferize.com/app/{id}', params={
 
 }, headers = headers)
 
@@ -1897,7 +1985,7 @@ print r.json()
 ```
 
 ```java
-URL obj = new URL("///app/{id}[timeRestriction]*");
+URL obj = new URL("http://api.saferize.com/app/{id}");
 HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 con.setRequestMethod("PATCH");
 int responseCode = con.getResponseCode();
@@ -1926,11 +2014,12 @@ func main() {
     headers := map[string][]string{
         "Content-Type": []string{"application/json"},
         "Accept": []string{"application/json"},
+        "Authorization": []string{"bearer {access-token}"},
         
     }
 
     data := bytes.NewBuffer([]byte{jsonReq})
-    req, err := http.NewRequest("PATCH", "///app/{id}[timeRestriction]*", data)
+    req, err := http.NewRequest("PATCH", "http://api.saferize.com/app/{id}", data)
     req.Header = headers
 
     client := &http.Client{}
@@ -1940,14 +2029,13 @@ func main() {
 
 ```
 
-`PATCH /app/{id}[timeRestriction]*`
+`PATCH /app/{id}`
 
-*Update app time restrictions*
+*Update App time restrictions*
 
-Time restrictions is a Saferize internal feature. If you would like parents to manage sessions, set time limits, and arbitrary pause/resume the app, you can set the time restrictions flag value to `ENABLED`. This is also the default value set upon [app creation](/#operation--app-post).
+Time restrictions is a Saferize internal feature. If you would like parents to manage sessions, set time limits, and arbitrarily pause/resume the app, you can set the time restrictions flag value to `ENABLED`. This is also the default value set upon [app creation](/#createapp).
 
 Otherwise, you may disable this feature by setting the time restrictions flag value to `DISABLED`.
-* The path in brackets not included in the actual path, but in the JsonPatch operation
 
 > Body parameter
 
@@ -1955,7 +2043,7 @@ Otherwise, you may disable this feature by setting the time restrictions flag va
 {
   "op": "replace",
   "path": "/status",
-  "value": {}
+  "value": "PUBLISHED"
 }
 ```
 
@@ -1980,11 +2068,9 @@ Otherwise, you may disable this feature by setting the time restrictions flag va
   "timeRestriction": "ENABLED",
   "status": "PUBLISHED",
   "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+  "shortDescription": "Lorem ipsum dolor sit amet.",
   "urlName": "string",
-  "details": [
-    "SOCIAL_INTERACTION",
-    "IN_APP_PURCHASES"
-  ],
+  "age": 5,
   "email": "developer@example.com"
 }
 ```
@@ -2000,7 +2086,7 @@ Otherwise, you may disable this feature by setting the time restrictions flag va
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
-None, None ( Scopes: read write )
+BearerAuth
 </aside>
 
 ## changeStatus
@@ -2011,15 +2097,16 @@ None, None ( Scopes: read write )
 
 ```shell
 # You can also use wget
-curl -X PATCH ///app/{id}[status]* \
+curl -X PATCH http://api.saferize.com/app/{id} \
   -H 'Content-Type: application/json' \
-  -H 'Accept: application/json'
+  -H 'Accept: application/json' \
+  -H 'Authorization: bearer {access-token}'
 
 ```
 
 ```http
-PATCH ///app/{id}[status]* HTTP/1.1
-Host: null
+PATCH http://api.saferize.com/app/{id} HTTP/1.1
+Host: api.saferize.com
 Content-Type: application/json
 Accept: application/json
 
@@ -2028,12 +2115,13 @@ Accept: application/json
 ```javascript
 var headers = {
   'Content-Type':'application/json',
-  'Accept':'application/json'
+  'Accept':'application/json',
+  'Authorization':'bearer {access-token}'
 
 };
 
 $.ajax({
-  url: '///app/{id}[status]*',
+  url: 'http://api.saferize.com/app/{id}',
   method: 'patch',
 
   headers: headers,
@@ -2049,15 +2137,16 @@ const request = require('node-fetch');
 const inputBody = '{
   "op": "replace",
   "path": "/status",
-  "value": {}
+  "value": "PUBLISHED"
 }';
 const headers = {
   'Content-Type':'application/json',
-  'Accept':'application/json'
+  'Accept':'application/json',
+  'Authorization':'bearer {access-token}'
 
 };
 
-fetch('///app/{id}[status]*',
+fetch('http://api.saferize.com/app/{id}',
 {
   method: 'PATCH',
   body: inputBody,
@@ -2077,10 +2166,11 @@ require 'json'
 
 headers = {
   'Content-Type' => 'application/json',
-  'Accept' => 'application/json'
+  'Accept' => 'application/json',
+  'Authorization' => 'bearer {access-token}'
 }
 
-result = RestClient.patch '///app/{id}[status]*',
+result = RestClient.patch 'http://api.saferize.com/app/{id}',
   params: {
   }, headers: headers
 
@@ -2092,10 +2182,11 @@ p JSON.parse(result)
 import requests
 headers = {
   'Content-Type': 'application/json',
-  'Accept': 'application/json'
+  'Accept': 'application/json',
+  'Authorization': 'bearer {access-token}'
 }
 
-r = requests.patch('///app/{id}[status]*', params={
+r = requests.patch('http://api.saferize.com/app/{id}', params={
 
 }, headers = headers)
 
@@ -2104,7 +2195,7 @@ print r.json()
 ```
 
 ```java
-URL obj = new URL("///app/{id}[status]*");
+URL obj = new URL("http://api.saferize.com/app/{id}");
 HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 con.setRequestMethod("PATCH");
 int responseCode = con.getResponseCode();
@@ -2133,11 +2224,12 @@ func main() {
     headers := map[string][]string{
         "Content-Type": []string{"application/json"},
         "Accept": []string{"application/json"},
+        "Authorization": []string{"bearer {access-token}"},
         
     }
 
     data := bytes.NewBuffer([]byte{jsonReq})
-    req, err := http.NewRequest("PATCH", "///app/{id}[status]*", data)
+    req, err := http.NewRequest("PATCH", "http://api.saferize.com/app/{id}", data)
     req.Header = headers
 
     client := &http.Client{}
@@ -2147,17 +2239,17 @@ func main() {
 
 ```
 
-`PATCH /app/{id}[status]*`
+`PATCH /app/{id}`
 
 *Update app status*
 
-* The path in square brackets not included in the actual path, but in the JsonPatch operation.
+When the app is created, the initial status is `DRAFT`. Once the app is ready to be published, you may change the status to `IN_REVIEW` via this endpoint. This will initialize the process of publishing the app, and will remain `IN_REVIEW` until Saferize Customer Support approves it, upon which it will become `PUBLISHED`.
 
-When the app is created, the initial status is `DRAFT`. Once the app is configured, you may change the status to ```PUBLISHED``` via this endpoint. This will initialize the process of publishing the app, and the status will be `IN_REVIEW` until Saferize Customer Support approves it.
-
-Firstly, you must [Authenticate the app](). In order to publish the app, all [App](/#/definitions/App) fields must be populated. In addition to this, the app must have have at least one [Screenshot](/#uploadscreenshot) and one [Logo](/#uploadlogo) uploaded. 
+Firstly, you must [Authenticate the app](/#createkey). In order to publish the app, all [App](/#tocSapp) fields must be populated. In addition to this, the app must have have at least one [Screenshot](/#uploadscreenshot) and one [Logo](/#uploadlogo) uploaded. 
 
 To delete the app, set the status to `DELETED`.
+
+You can learn more on how to go from creating an app to publishing one in our [Saferize Quick Start](http://google.com).
 
 If you need any help throughout this process, please contact the Saferize Customer Support.
 
@@ -2167,7 +2259,7 @@ If you need any help throughout this process, please contact the Saferize Custom
 {
   "op": "replace",
   "path": "/status",
-  "value": {}
+  "value": "PUBLISHED"
 }
 ```
 
@@ -2192,11 +2284,9 @@ If you need any help throughout this process, please contact the Saferize Custom
   "timeRestriction": "ENABLED",
   "status": "PUBLISHED",
   "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+  "shortDescription": "Lorem ipsum dolor sit amet.",
   "urlName": "string",
-  "details": [
-    "SOCIAL_INTERACTION",
-    "IN_APP_PURCHASES"
-  ],
+  "age": 5,
   "email": "developer@example.com"
 }
 ```
@@ -2212,7 +2302,7 @@ If you need any help throughout this process, please contact the Saferize Custom
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
-None, None ( Scopes: read write )
+BearerAuth
 </aside>
 
 ## updateAppConfig
@@ -2223,15 +2313,16 @@ None, None ( Scopes: read write )
 
 ```shell
 # You can also use wget
-curl -X PUT ///app/{id}/config \
+curl -X PUT http://api.saferize.com/app/{id}/config \
   -H 'Content-Type: application/json' \
-  -H 'Accept: application/json'
+  -H 'Accept: application/json' \
+  -H 'Authorization: bearer {access-token}'
 
 ```
 
 ```http
-PUT ///app/{id}/config HTTP/1.1
-Host: null
+PUT http://api.saferize.com/app/{id}/config HTTP/1.1
+Host: api.saferize.com
 Content-Type: application/json
 Accept: application/json
 
@@ -2240,12 +2331,13 @@ Accept: application/json
 ```javascript
 var headers = {
   'Content-Type':'application/json',
-  'Accept':'application/json'
+  'Accept':'application/json',
+  'Authorization':'bearer {access-token}'
 
 };
 
 $.ajax({
-  url: '///app/{id}/config',
+  url: 'http://api.saferize.com/app/{id}/config',
   method: 'put',
 
   headers: headers,
@@ -2266,11 +2358,12 @@ const inputBody = '{
 }';
 const headers = {
   'Content-Type':'application/json',
-  'Accept':'application/json'
+  'Accept':'application/json',
+  'Authorization':'bearer {access-token}'
 
 };
 
-fetch('///app/{id}/config',
+fetch('http://api.saferize.com/app/{id}/config',
 {
   method: 'PUT',
   body: inputBody,
@@ -2290,10 +2383,11 @@ require 'json'
 
 headers = {
   'Content-Type' => 'application/json',
-  'Accept' => 'application/json'
+  'Accept' => 'application/json',
+  'Authorization' => 'bearer {access-token}'
 }
 
-result = RestClient.put '///app/{id}/config',
+result = RestClient.put 'http://api.saferize.com/app/{id}/config',
   params: {
   }, headers: headers
 
@@ -2305,10 +2399,11 @@ p JSON.parse(result)
 import requests
 headers = {
   'Content-Type': 'application/json',
-  'Accept': 'application/json'
+  'Accept': 'application/json',
+  'Authorization': 'bearer {access-token}'
 }
 
-r = requests.put('///app/{id}/config', params={
+r = requests.put('http://api.saferize.com/app/{id}/config', params={
 
 }, headers = headers)
 
@@ -2317,7 +2412,7 @@ print r.json()
 ```
 
 ```java
-URL obj = new URL("///app/{id}/config");
+URL obj = new URL("http://api.saferize.com/app/{id}/config");
 HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 con.setRequestMethod("PUT");
 int responseCode = con.getResponseCode();
@@ -2346,11 +2441,12 @@ func main() {
     headers := map[string][]string{
         "Content-Type": []string{"application/json"},
         "Accept": []string{"application/json"},
+        "Authorization": []string{"bearer {access-token}"},
         
     }
 
     data := bytes.NewBuffer([]byte{jsonReq})
-    req, err := http.NewRequest("PUT", "///app/{id}/config", data)
+    req, err := http.NewRequest("PUT", "http://api.saferize.com/app/{id}/config", data)
     req.Header = headers
 
     client := &http.Client{}
@@ -2362,7 +2458,9 @@ func main() {
 
 `PUT /app/{id}/config`
 
-*Update app configuration*
+*Update App configuration*
+
+Updates the accompanying configuration object of the app. Take a look at the [AppConfig](/#tocSappconfig) for more details about the attributes of this object.
 
 > Body parameter
 
@@ -2404,7 +2502,7 @@ func main() {
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
-None, None ( Scopes: read write )
+BearerAuth
 </aside>
 
 ## getAppConfig
@@ -2415,14 +2513,15 @@ None, None ( Scopes: read write )
 
 ```shell
 # You can also use wget
-curl -X GET ///app/{id}/config \
-  -H 'Accept: application/json'
+curl -X GET http://api.saferize.com/app/{id}/config \
+  -H 'Accept: application/json' \
+  -H 'Authorization: bearer {access-token}'
 
 ```
 
 ```http
-GET ///app/{id}/config HTTP/1.1
-Host: null
+GET http://api.saferize.com/app/{id}/config HTTP/1.1
+Host: api.saferize.com
 
 Accept: application/json
 
@@ -2430,12 +2529,13 @@ Accept: application/json
 
 ```javascript
 var headers = {
-  'Accept':'application/json'
+  'Accept':'application/json',
+  'Authorization':'bearer {access-token}'
 
 };
 
 $.ajax({
-  url: '///app/{id}/config',
+  url: 'http://api.saferize.com/app/{id}/config',
   method: 'get',
 
   headers: headers,
@@ -2450,11 +2550,12 @@ $.ajax({
 const request = require('node-fetch');
 
 const headers = {
-  'Accept':'application/json'
+  'Accept':'application/json',
+  'Authorization':'bearer {access-token}'
 
 };
 
-fetch('///app/{id}/config',
+fetch('http://api.saferize.com/app/{id}/config',
 {
   method: 'GET',
 
@@ -2473,10 +2574,11 @@ require 'rest-client'
 require 'json'
 
 headers = {
-  'Accept' => 'application/json'
+  'Accept' => 'application/json',
+  'Authorization' => 'bearer {access-token}'
 }
 
-result = RestClient.get '///app/{id}/config',
+result = RestClient.get 'http://api.saferize.com/app/{id}/config',
   params: {
   }, headers: headers
 
@@ -2487,10 +2589,11 @@ p JSON.parse(result)
 ```python
 import requests
 headers = {
-  'Accept': 'application/json'
+  'Accept': 'application/json',
+  'Authorization': 'bearer {access-token}'
 }
 
-r = requests.get('///app/{id}/config', params={
+r = requests.get('http://api.saferize.com/app/{id}/config', params={
 
 }, headers = headers)
 
@@ -2499,7 +2602,7 @@ print r.json()
 ```
 
 ```java
-URL obj = new URL("///app/{id}/config");
+URL obj = new URL("http://api.saferize.com/app/{id}/config");
 HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 con.setRequestMethod("GET");
 int responseCode = con.getResponseCode();
@@ -2527,11 +2630,12 @@ func main() {
 
     headers := map[string][]string{
         "Accept": []string{"application/json"},
+        "Authorization": []string{"bearer {access-token}"},
         
     }
 
     data := bytes.NewBuffer([]byte{jsonReq})
-    req, err := http.NewRequest("GET", "///app/{id}/config", data)
+    req, err := http.NewRequest("GET", "http://api.saferize.com/app/{id}/config", data)
     req.Header = headers
 
     client := &http.Client{}
@@ -2543,7 +2647,7 @@ func main() {
 
 `GET /app/{id}/config`
 
-*Retrieve app configuration*
+*Retrieve App configuration*
 
 <h3 id="getAppConfig-parameters">Parameters</h3>
 
@@ -2572,7 +2676,7 @@ func main() {
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
-None, None ( Scopes: read write )
+BearerAuth
 </aside>
 
 ## uploadLogo
@@ -2583,29 +2687,31 @@ None, None ( Scopes: read write )
 
 ```shell
 # You can also use wget
-curl -X POST ///app/{id}/logo \
-  -H 'Content-Type: application/json' \
-  -H 'Accept: application/json'
+curl -X POST http://api.saferize.com/app/{id}/logo \
+  -H 'Content-Type: multipart/form-data' \
+  -H 'Accept: application/json' \
+  -H 'Authorization: bearer {access-token}'
 
 ```
 
 ```http
-POST ///app/{id}/logo HTTP/1.1
-Host: null
-Content-Type: application/json
+POST http://api.saferize.com/app/{id}/logo HTTP/1.1
+Host: api.saferize.com
+Content-Type: multipart/form-data
 Accept: application/json
 
 ```
 
 ```javascript
 var headers = {
-  'Content-Type':'application/json',
-  'Accept':'application/json'
+  'Content-Type':'multipart/form-data',
+  'Accept':'application/json',
+  'Authorization':'bearer {access-token}'
 
 };
 
 $.ajax({
-  url: '///app/{id}/logo',
+  url: 'http://api.saferize.com/app/{id}/logo',
   method: 'post',
 
   headers: headers,
@@ -2618,14 +2724,15 @@ $.ajax({
 
 ```javascript--nodejs
 const request = require('node-fetch');
-const inputBody = 'string';
+const inputBody = '{}';
 const headers = {
-  'Content-Type':'application/json',
-  'Accept':'application/json'
+  'Content-Type':'multipart/form-data',
+  'Accept':'application/json',
+  'Authorization':'bearer {access-token}'
 
 };
 
-fetch('///app/{id}/logo',
+fetch('http://api.saferize.com/app/{id}/logo',
 {
   method: 'POST',
   body: inputBody,
@@ -2644,11 +2751,12 @@ require 'rest-client'
 require 'json'
 
 headers = {
-  'Content-Type' => 'application/json',
-  'Accept' => 'application/json'
+  'Content-Type' => 'multipart/form-data',
+  'Accept' => 'application/json',
+  'Authorization' => 'bearer {access-token}'
 }
 
-result = RestClient.post '///app/{id}/logo',
+result = RestClient.post 'http://api.saferize.com/app/{id}/logo',
   params: {
   }, headers: headers
 
@@ -2659,11 +2767,12 @@ p JSON.parse(result)
 ```python
 import requests
 headers = {
-  'Content-Type': 'application/json',
-  'Accept': 'application/json'
+  'Content-Type': 'multipart/form-data',
+  'Accept': 'application/json',
+  'Authorization': 'bearer {access-token}'
 }
 
-r = requests.post('///app/{id}/logo', params={
+r = requests.post('http://api.saferize.com/app/{id}/logo', params={
 
 }, headers = headers)
 
@@ -2672,7 +2781,7 @@ print r.json()
 ```
 
 ```java
-URL obj = new URL("///app/{id}/logo");
+URL obj = new URL("http://api.saferize.com/app/{id}/logo");
 HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 con.setRequestMethod("POST");
 int responseCode = con.getResponseCode();
@@ -2699,13 +2808,14 @@ import (
 func main() {
 
     headers := map[string][]string{
-        "Content-Type": []string{"application/json"},
+        "Content-Type": []string{"multipart/form-data"},
         "Accept": []string{"application/json"},
+        "Authorization": []string{"bearer {access-token}"},
         
     }
 
     data := bytes.NewBuffer([]byte{jsonReq})
-    req, err := http.NewRequest("POST", "///app/{id}/logo", data)
+    req, err := http.NewRequest("POST", "http://api.saferize.com/app/{id}/logo", data)
     req.Header = headers
 
     client := &http.Client{}
@@ -2717,12 +2827,13 @@ func main() {
 
 `POST /app/{id}/logo`
 
-*Upload app logo*
+*Upload App logo*
 
 > Body parameter
 
-```json
-"string"
+```yaml
+{}
+
 ```
 
 <h3 id="uploadLogo-parameters">Parameters</h3>
@@ -2730,7 +2841,7 @@ func main() {
 |Parameter|In|Type|Required|Description|
 |---|---|---|---|---|
 |id|path|integer(int64)|true|Unique identifier for the app.|
-|body|body|[uploadLogoBody](#schemauploadlogobody)|true|A file to upload. The file should follow the specifications of RFC 2388 (which defines file transfers for the `multipart/form-data protocol`.|
+|body|body|[RFC2388](#schemarfc2388)|true|A file to upload. The file should follow the specifications of [RFC 2388](https://tools.ietf.org/html/rfc2388) (which defines file transfers for the `multipart/form-data protocol`).|
 
 > Example responses
 
@@ -2755,7 +2866,7 @@ func main() {
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
-None, None ( Scopes: read write )
+BearerAuth
 </aside>
 
 ## getLogos
@@ -2766,14 +2877,15 @@ None, None ( Scopes: read write )
 
 ```shell
 # You can also use wget
-curl -X GET ///app/{id}/logo \
-  -H 'Accept: application/json'
+curl -X GET http://api.saferize.com/app/{id}/logo \
+  -H 'Accept: application/json' \
+  -H 'Authorization: bearer {access-token}'
 
 ```
 
 ```http
-GET ///app/{id}/logo HTTP/1.1
-Host: null
+GET http://api.saferize.com/app/{id}/logo HTTP/1.1
+Host: api.saferize.com
 
 Accept: application/json
 
@@ -2781,12 +2893,13 @@ Accept: application/json
 
 ```javascript
 var headers = {
-  'Accept':'application/json'
+  'Accept':'application/json',
+  'Authorization':'bearer {access-token}'
 
 };
 
 $.ajax({
-  url: '///app/{id}/logo',
+  url: 'http://api.saferize.com/app/{id}/logo',
   method: 'get',
 
   headers: headers,
@@ -2801,11 +2914,12 @@ $.ajax({
 const request = require('node-fetch');
 
 const headers = {
-  'Accept':'application/json'
+  'Accept':'application/json',
+  'Authorization':'bearer {access-token}'
 
 };
 
-fetch('///app/{id}/logo',
+fetch('http://api.saferize.com/app/{id}/logo',
 {
   method: 'GET',
 
@@ -2824,10 +2938,11 @@ require 'rest-client'
 require 'json'
 
 headers = {
-  'Accept' => 'application/json'
+  'Accept' => 'application/json',
+  'Authorization' => 'bearer {access-token}'
 }
 
-result = RestClient.get '///app/{id}/logo',
+result = RestClient.get 'http://api.saferize.com/app/{id}/logo',
   params: {
   }, headers: headers
 
@@ -2838,10 +2953,11 @@ p JSON.parse(result)
 ```python
 import requests
 headers = {
-  'Accept': 'application/json'
+  'Accept': 'application/json',
+  'Authorization': 'bearer {access-token}'
 }
 
-r = requests.get('///app/{id}/logo', params={
+r = requests.get('http://api.saferize.com/app/{id}/logo', params={
 
 }, headers = headers)
 
@@ -2850,7 +2966,7 @@ print r.json()
 ```
 
 ```java
-URL obj = new URL("///app/{id}/logo");
+URL obj = new URL("http://api.saferize.com/app/{id}/logo");
 HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 con.setRequestMethod("GET");
 int responseCode = con.getResponseCode();
@@ -2878,11 +2994,12 @@ func main() {
 
     headers := map[string][]string{
         "Accept": []string{"application/json"},
+        "Authorization": []string{"bearer {access-token}"},
         
     }
 
     data := bytes.NewBuffer([]byte{jsonReq})
-    req, err := http.NewRequest("GET", "///app/{id}/logo", data)
+    req, err := http.NewRequest("GET", "http://api.saferize.com/app/{id}/logo", data)
     req.Header = headers
 
     client := &http.Client{}
@@ -2894,7 +3011,7 @@ func main() {
 
 `GET /app/{id}/logo`
 
-*Retrieve app logo*
+*Retrieve App logo*
 
 <h3 id="getLogos-parameters">Parameters</h3>
 
@@ -2905,41 +3022,25 @@ func main() {
 > Example responses
 
 ```json
-[
-  {
-    "id": 123456789,
-    "url": "https://s3.us-west-1.amazonaws.com/path/to/a/file.jpg\"",
-    "createdTime": 1522346229038,
-    "width": 200,
-    "height": 200
-  }
-]
+{
+  "id": 123456789,
+  "url": "https://s3.us-west-1.amazonaws.com/path/to/a/file.jpg\"",
+  "createdTime": 1522346229038,
+  "width": 200,
+  "height": 200
+}
 ```
 
 <h3 id="getLogos-responses">Responses</h3>
 
 |Status|Meaning|Description|Schema|
 |---|---|---|---|
-|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Returns an array of image objects if they exist on the system.|Inline|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Returns an array of image objects if they exist on the system.|[ImageUpload](#schemaimageupload)|
 |401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|No valid `Authentication` header provided.|[Error](#schemaerror)|
 |404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|The specified resource was not found.|[Error](#schemaerror)|
 
-<h3 id="getLogos-responseschema">Response Schema</h3>
-
-Status Code **200**
-
-|Name|Type|Required|Description|
-|---|---|---|---|
-|*anonymous*|[[ImageUpload](#schemaimageupload)]|false|No description|
-|» id|integer(int64)|false|Unique identifier for the image returned by the system.|
-|» url|string|false|A read-only URL where the uploaded file can be accessed.|
-|» createdTime|string|false|Time at which the object was created. Measured in seconds since the Unix epoch.|
-|» width|integer(int64)|false|The witdh in pixels of the image object.|
-|» height|integer(int64)|false|The witdh in pixels of the image object.|
-
-<aside class="warning">
-To perform this operation, you must be authenticated by means of one of the following methods:
-None, None ( Scopes: read write )
+<aside class="success">
+This operation does not require authentication
 </aside>
 
 ## deleteLogo
@@ -2950,22 +3051,32 @@ None, None ( Scopes: read write )
 
 ```shell
 # You can also use wget
-curl -X DELETE ///app/{id}/logo/{logoId}
+curl -X DELETE http://api.saferize.com/app/{id}/logo/{logoId} \
+  -H 'Accept: */*' \
+  -H 'Authorization: bearer {access-token}'
 
 ```
 
 ```http
-DELETE ///app/{id}/logo/{logoId} HTTP/1.1
-Host: null
+DELETE http://api.saferize.com/app/{id}/logo/{logoId} HTTP/1.1
+Host: api.saferize.com
+
+Accept: */*
 
 ```
 
 ```javascript
+var headers = {
+  'Accept':'*/*',
+  'Authorization':'bearer {access-token}'
+
+};
 
 $.ajax({
-  url: '///app/{id}/logo/{logoId}',
+  url: 'http://api.saferize.com/app/{id}/logo/{logoId}',
   method: 'delete',
 
+  headers: headers,
   success: function(data) {
     console.log(JSON.stringify(data));
   }
@@ -2976,10 +3087,17 @@ $.ajax({
 ```javascript--nodejs
 const request = require('node-fetch');
 
-fetch('///app/{id}/logo/{logoId}',
-{
-  method: 'DELETE'
+const headers = {
+  'Accept':'*/*',
+  'Authorization':'bearer {access-token}'
 
+};
+
+fetch('http://api.saferize.com/app/{id}/logo/{logoId}',
+{
+  method: 'DELETE',
+
+  headers: headers
 })
 .then(function(res) {
     return res.json();
@@ -2993,9 +3111,14 @@ fetch('///app/{id}/logo/{logoId}',
 require 'rest-client'
 require 'json'
 
-result = RestClient.delete '///app/{id}/logo/{logoId}',
+headers = {
+  'Accept' => '*/*',
+  'Authorization' => 'bearer {access-token}'
+}
+
+result = RestClient.delete 'http://api.saferize.com/app/{id}/logo/{logoId}',
   params: {
-  }
+  }, headers: headers
 
 p JSON.parse(result)
 
@@ -3003,17 +3126,21 @@ p JSON.parse(result)
 
 ```python
 import requests
+headers = {
+  'Accept': '*/*',
+  'Authorization': 'bearer {access-token}'
+}
 
-r = requests.delete('///app/{id}/logo/{logoId}', params={
+r = requests.delete('http://api.saferize.com/app/{id}/logo/{logoId}', params={
 
-)
+}, headers = headers)
 
 print r.json()
 
 ```
 
 ```java
-URL obj = new URL("///app/{id}/logo/{logoId}");
+URL obj = new URL("http://api.saferize.com/app/{id}/logo/{logoId}");
 HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 con.setRequestMethod("DELETE");
 int responseCode = con.getResponseCode();
@@ -3039,8 +3166,14 @@ import (
 
 func main() {
 
+    headers := map[string][]string{
+        "Accept": []string{"*/*"},
+        "Authorization": []string{"bearer {access-token}"},
+        
+    }
+
     data := bytes.NewBuffer([]byte{jsonReq})
-    req, err := http.NewRequest("DELETE", "///app/{id}/logo/{logoId}", data)
+    req, err := http.NewRequest("DELETE", "http://api.saferize.com/app/{id}/logo/{logoId}", data)
     req.Header = headers
 
     client := &http.Client{}
@@ -3052,7 +3185,7 @@ func main() {
 
 `DELETE /app/{id}/logo/{logoId}`
 
-*Delete app logo*
+*Delete App logo*
 
 <h3 id="deleteLogo-parameters">Parameters</h3>
 
@@ -3061,15 +3194,19 @@ func main() {
 |id|path|integer(int64)|true|Unique identifier for the app.|
 |logoId|path|integer(int64)|true|Unique identifier for the image file to be deleted.|
 
+> Example responses
+
 <h3 id="deleteLogo-responses">Responses</h3>
 
 |Status|Meaning|Description|Schema|
 |---|---|---|---|
 |204|[No Content](https://tools.ietf.org/html/rfc7231#section-6.3.5)|Returns `No Content` if the deletion was succeeded.|None|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|No valid `Authentication` header provided.|[Error](#schemaerror)|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|The specified resource was not found.|[Error](#schemaerror)|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
-None, None ( Scopes: read write )
+BearerAuth
 </aside>
 
 ## uploadScreenshot
@@ -3080,29 +3217,31 @@ None, None ( Scopes: read write )
 
 ```shell
 # You can also use wget
-curl -X POST ///app/{id}/screenshots \
-  -H 'Content-Type: application/json' \
-  -H 'Accept: application/json'
+curl -X POST http://api.saferize.com/app/{id}/screenshots \
+  -H 'Content-Type: multipart/form-data' \
+  -H 'Accept: application/json' \
+  -H 'Authorization: bearer {access-token}'
 
 ```
 
 ```http
-POST ///app/{id}/screenshots HTTP/1.1
-Host: null
-Content-Type: application/json
+POST http://api.saferize.com/app/{id}/screenshots HTTP/1.1
+Host: api.saferize.com
+Content-Type: multipart/form-data
 Accept: application/json
 
 ```
 
 ```javascript
 var headers = {
-  'Content-Type':'application/json',
-  'Accept':'application/json'
+  'Content-Type':'multipart/form-data',
+  'Accept':'application/json',
+  'Authorization':'bearer {access-token}'
 
 };
 
 $.ajax({
-  url: '///app/{id}/screenshots',
+  url: 'http://api.saferize.com/app/{id}/screenshots',
   method: 'post',
 
   headers: headers,
@@ -3115,14 +3254,15 @@ $.ajax({
 
 ```javascript--nodejs
 const request = require('node-fetch');
-const inputBody = 'string';
+const inputBody = '{}';
 const headers = {
-  'Content-Type':'application/json',
-  'Accept':'application/json'
+  'Content-Type':'multipart/form-data',
+  'Accept':'application/json',
+  'Authorization':'bearer {access-token}'
 
 };
 
-fetch('///app/{id}/screenshots',
+fetch('http://api.saferize.com/app/{id}/screenshots',
 {
   method: 'POST',
   body: inputBody,
@@ -3141,11 +3281,12 @@ require 'rest-client'
 require 'json'
 
 headers = {
-  'Content-Type' => 'application/json',
-  'Accept' => 'application/json'
+  'Content-Type' => 'multipart/form-data',
+  'Accept' => 'application/json',
+  'Authorization' => 'bearer {access-token}'
 }
 
-result = RestClient.post '///app/{id}/screenshots',
+result = RestClient.post 'http://api.saferize.com/app/{id}/screenshots',
   params: {
   }, headers: headers
 
@@ -3156,11 +3297,12 @@ p JSON.parse(result)
 ```python
 import requests
 headers = {
-  'Content-Type': 'application/json',
-  'Accept': 'application/json'
+  'Content-Type': 'multipart/form-data',
+  'Accept': 'application/json',
+  'Authorization': 'bearer {access-token}'
 }
 
-r = requests.post('///app/{id}/screenshots', params={
+r = requests.post('http://api.saferize.com/app/{id}/screenshots', params={
 
 }, headers = headers)
 
@@ -3169,7 +3311,7 @@ print r.json()
 ```
 
 ```java
-URL obj = new URL("///app/{id}/screenshots");
+URL obj = new URL("http://api.saferize.com/app/{id}/screenshots");
 HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 con.setRequestMethod("POST");
 int responseCode = con.getResponseCode();
@@ -3196,13 +3338,14 @@ import (
 func main() {
 
     headers := map[string][]string{
-        "Content-Type": []string{"application/json"},
+        "Content-Type": []string{"multipart/form-data"},
         "Accept": []string{"application/json"},
+        "Authorization": []string{"bearer {access-token}"},
         
     }
 
     data := bytes.NewBuffer([]byte{jsonReq})
-    req, err := http.NewRequest("POST", "///app/{id}/screenshots", data)
+    req, err := http.NewRequest("POST", "http://api.saferize.com/app/{id}/screenshots", data)
     req.Header = headers
 
     client := &http.Client{}
@@ -3214,12 +3357,13 @@ func main() {
 
 `POST /app/{id}/screenshots`
 
-*Upload app screenshot*
+*Upload App screenshot*
 
 > Body parameter
 
-```json
-"string"
+```yaml
+{}
+
 ```
 
 <h3 id="uploadScreenshot-parameters">Parameters</h3>
@@ -3227,7 +3371,7 @@ func main() {
 |Parameter|In|Type|Required|Description|
 |---|---|---|---|---|
 |id|path|integer(int64)|true|Unique identifier for the app.|
-|body|body|[uploadLogoBody](#schemauploadlogobody)|true|A file to upload. The file should follow the specifications of RFC 2388 (which defines file transfers for the `multipart/form-data protocol`.|
+|body|body|[RFC2388](#schemarfc2388)|true|A file to upload. The file should follow the specifications of [RFC 2388](https://tools.ietf.org/html/rfc2388) (which defines file transfers for the `multipart/form-data protocol`).|
 
 > Example responses
 
@@ -3252,7 +3396,7 @@ func main() {
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
-None, None ( Scopes: read write )
+BearerAuth
 </aside>
 
 ## getScreenshots
@@ -3263,14 +3407,15 @@ None, None ( Scopes: read write )
 
 ```shell
 # You can also use wget
-curl -X GET ///app/{id}/screenshots \
-  -H 'Accept: application/json'
+curl -X GET http://api.saferize.com/app/{id}/screenshots \
+  -H 'Accept: application/json' \
+  -H 'Authorization: bearer {access-token}'
 
 ```
 
 ```http
-GET ///app/{id}/screenshots HTTP/1.1
-Host: null
+GET http://api.saferize.com/app/{id}/screenshots HTTP/1.1
+Host: api.saferize.com
 
 Accept: application/json
 
@@ -3278,12 +3423,13 @@ Accept: application/json
 
 ```javascript
 var headers = {
-  'Accept':'application/json'
+  'Accept':'application/json',
+  'Authorization':'bearer {access-token}'
 
 };
 
 $.ajax({
-  url: '///app/{id}/screenshots',
+  url: 'http://api.saferize.com/app/{id}/screenshots',
   method: 'get',
 
   headers: headers,
@@ -3298,11 +3444,12 @@ $.ajax({
 const request = require('node-fetch');
 
 const headers = {
-  'Accept':'application/json'
+  'Accept':'application/json',
+  'Authorization':'bearer {access-token}'
 
 };
 
-fetch('///app/{id}/screenshots',
+fetch('http://api.saferize.com/app/{id}/screenshots',
 {
   method: 'GET',
 
@@ -3321,10 +3468,11 @@ require 'rest-client'
 require 'json'
 
 headers = {
-  'Accept' => 'application/json'
+  'Accept' => 'application/json',
+  'Authorization' => 'bearer {access-token}'
 }
 
-result = RestClient.get '///app/{id}/screenshots',
+result = RestClient.get 'http://api.saferize.com/app/{id}/screenshots',
   params: {
   }, headers: headers
 
@@ -3335,10 +3483,11 @@ p JSON.parse(result)
 ```python
 import requests
 headers = {
-  'Accept': 'application/json'
+  'Accept': 'application/json',
+  'Authorization': 'bearer {access-token}'
 }
 
-r = requests.get('///app/{id}/screenshots', params={
+r = requests.get('http://api.saferize.com/app/{id}/screenshots', params={
 
 }, headers = headers)
 
@@ -3347,7 +3496,7 @@ print r.json()
 ```
 
 ```java
-URL obj = new URL("///app/{id}/screenshots");
+URL obj = new URL("http://api.saferize.com/app/{id}/screenshots");
 HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 con.setRequestMethod("GET");
 int responseCode = con.getResponseCode();
@@ -3375,11 +3524,12 @@ func main() {
 
     headers := map[string][]string{
         "Accept": []string{"application/json"},
+        "Authorization": []string{"bearer {access-token}"},
         
     }
 
     data := bytes.NewBuffer([]byte{jsonReq})
-    req, err := http.NewRequest("GET", "///app/{id}/screenshots", data)
+    req, err := http.NewRequest("GET", "http://api.saferize.com/app/{id}/screenshots", data)
     req.Header = headers
 
     client := &http.Client{}
@@ -3391,7 +3541,7 @@ func main() {
 
 `GET /app/{id}/screenshots`
 
-*Retrieve app screenshots*
+*Retrieve App screenshots*
 
 <h3 id="getScreenshots-parameters">Parameters</h3>
 
@@ -3402,41 +3552,25 @@ func main() {
 > Example responses
 
 ```json
-[
-  {
-    "id": 123456789,
-    "url": "https://s3.us-west-1.amazonaws.com/path/to/a/file.jpg\"",
-    "createdTime": 1522346229038,
-    "width": 200,
-    "height": 200
-  }
-]
+{
+  "id": 123456789,
+  "url": "https://s3.us-west-1.amazonaws.com/path/to/a/file.jpg\"",
+  "createdTime": 1522346229038,
+  "width": 200,
+  "height": 200
+}
 ```
 
 <h3 id="getScreenshots-responses">Responses</h3>
 
 |Status|Meaning|Description|Schema|
 |---|---|---|---|
-|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Returns an array of image objects if they exist on the system.|Inline|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Returns an array of image objects if they exist on the system.|[ImageUpload](#schemaimageupload)|
 |401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|No valid `Authentication` header provided.|[Error](#schemaerror)|
 |404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|The specified resource was not found.|[Error](#schemaerror)|
 
-<h3 id="getScreenshots-responseschema">Response Schema</h3>
-
-Status Code **200**
-
-|Name|Type|Required|Description|
-|---|---|---|---|
-|*anonymous*|[[ImageUpload](#schemaimageupload)]|false|No description|
-|» id|integer(int64)|false|Unique identifier for the image returned by the system.|
-|» url|string|false|A read-only URL where the uploaded file can be accessed.|
-|» createdTime|string|false|Time at which the object was created. Measured in seconds since the Unix epoch.|
-|» width|integer(int64)|false|The witdh in pixels of the image object.|
-|» height|integer(int64)|false|The witdh in pixels of the image object.|
-
-<aside class="warning">
-To perform this operation, you must be authenticated by means of one of the following methods:
-None, None ( Scopes: read write )
+<aside class="success">
+This operation does not require authentication
 </aside>
 
 ## deleteScreenshot
@@ -3447,22 +3581,32 @@ None, None ( Scopes: read write )
 
 ```shell
 # You can also use wget
-curl -X DELETE ///app/{id}/screenshots/{screenshotId}
+curl -X DELETE http://api.saferize.com/app/{id}/screenshots/{screenshotId} \
+  -H 'Accept: */*' \
+  -H 'Authorization: bearer {access-token}'
 
 ```
 
 ```http
-DELETE ///app/{id}/screenshots/{screenshotId} HTTP/1.1
-Host: null
+DELETE http://api.saferize.com/app/{id}/screenshots/{screenshotId} HTTP/1.1
+Host: api.saferize.com
+
+Accept: */*
 
 ```
 
 ```javascript
+var headers = {
+  'Accept':'*/*',
+  'Authorization':'bearer {access-token}'
+
+};
 
 $.ajax({
-  url: '///app/{id}/screenshots/{screenshotId}',
+  url: 'http://api.saferize.com/app/{id}/screenshots/{screenshotId}',
   method: 'delete',
 
+  headers: headers,
   success: function(data) {
     console.log(JSON.stringify(data));
   }
@@ -3473,10 +3617,17 @@ $.ajax({
 ```javascript--nodejs
 const request = require('node-fetch');
 
-fetch('///app/{id}/screenshots/{screenshotId}',
-{
-  method: 'DELETE'
+const headers = {
+  'Accept':'*/*',
+  'Authorization':'bearer {access-token}'
 
+};
+
+fetch('http://api.saferize.com/app/{id}/screenshots/{screenshotId}',
+{
+  method: 'DELETE',
+
+  headers: headers
 })
 .then(function(res) {
     return res.json();
@@ -3490,9 +3641,14 @@ fetch('///app/{id}/screenshots/{screenshotId}',
 require 'rest-client'
 require 'json'
 
-result = RestClient.delete '///app/{id}/screenshots/{screenshotId}',
+headers = {
+  'Accept' => '*/*',
+  'Authorization' => 'bearer {access-token}'
+}
+
+result = RestClient.delete 'http://api.saferize.com/app/{id}/screenshots/{screenshotId}',
   params: {
-  }
+  }, headers: headers
 
 p JSON.parse(result)
 
@@ -3500,17 +3656,21 @@ p JSON.parse(result)
 
 ```python
 import requests
+headers = {
+  'Accept': '*/*',
+  'Authorization': 'bearer {access-token}'
+}
 
-r = requests.delete('///app/{id}/screenshots/{screenshotId}', params={
+r = requests.delete('http://api.saferize.com/app/{id}/screenshots/{screenshotId}', params={
 
-)
+}, headers = headers)
 
 print r.json()
 
 ```
 
 ```java
-URL obj = new URL("///app/{id}/screenshots/{screenshotId}");
+URL obj = new URL("http://api.saferize.com/app/{id}/screenshots/{screenshotId}");
 HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 con.setRequestMethod("DELETE");
 int responseCode = con.getResponseCode();
@@ -3536,8 +3696,14 @@ import (
 
 func main() {
 
+    headers := map[string][]string{
+        "Accept": []string{"*/*"},
+        "Authorization": []string{"bearer {access-token}"},
+        
+    }
+
     data := bytes.NewBuffer([]byte{jsonReq})
-    req, err := http.NewRequest("DELETE", "///app/{id}/screenshots/{screenshotId}", data)
+    req, err := http.NewRequest("DELETE", "http://api.saferize.com/app/{id}/screenshots/{screenshotId}", data)
     req.Header = headers
 
     client := &http.Client{}
@@ -3549,7 +3715,7 @@ func main() {
 
 `DELETE /app/{id}/screenshots/{screenshotId}`
 
-*Delete app screenshot*
+*Delete App screenshot*
 
 <h3 id="deleteScreenshot-parameters">Parameters</h3>
 
@@ -3558,15 +3724,19 @@ func main() {
 |id|path|integer(int64)|true|Unique identifier for the app.|
 |screenshotId|path|integer(int64)|true|Unique identifier for the image file to be deleted.|
 
+> Example responses
+
 <h3 id="deleteScreenshot-responses">Responses</h3>
 
 |Status|Meaning|Description|Schema|
 |---|---|---|---|
 |204|[No Content](https://tools.ietf.org/html/rfc7231#section-6.3.5)|Returns `No Content` if the deletion was succeeded.|None|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|No valid `Authentication` header provided.|[Error](#schemaerror)|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|The specified resource was not found.|[Error](#schemaerror)|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
-None, None ( Scopes: read write )
+BearerAuth
 </aside>
 
 ## getAppPlan
@@ -3577,14 +3747,15 @@ None, None ( Scopes: read write )
 
 ```shell
 # You can also use wget
-curl -X GET ///app/{id}/plan \
-  -H 'Accept: application/json'
+curl -X GET http://api.saferize.com/app/{id}/plan \
+  -H 'Accept: application/json' \
+  -H 'Authorization: bearer {access-token}'
 
 ```
 
 ```http
-GET ///app/{id}/plan HTTP/1.1
-Host: null
+GET http://api.saferize.com/app/{id}/plan HTTP/1.1
+Host: api.saferize.com
 
 Accept: application/json
 
@@ -3592,12 +3763,13 @@ Accept: application/json
 
 ```javascript
 var headers = {
-  'Accept':'application/json'
+  'Accept':'application/json',
+  'Authorization':'bearer {access-token}'
 
 };
 
 $.ajax({
-  url: '///app/{id}/plan',
+  url: 'http://api.saferize.com/app/{id}/plan',
   method: 'get',
 
   headers: headers,
@@ -3612,11 +3784,12 @@ $.ajax({
 const request = require('node-fetch');
 
 const headers = {
-  'Accept':'application/json'
+  'Accept':'application/json',
+  'Authorization':'bearer {access-token}'
 
 };
 
-fetch('///app/{id}/plan',
+fetch('http://api.saferize.com/app/{id}/plan',
 {
   method: 'GET',
 
@@ -3635,10 +3808,11 @@ require 'rest-client'
 require 'json'
 
 headers = {
-  'Accept' => 'application/json'
+  'Accept' => 'application/json',
+  'Authorization' => 'bearer {access-token}'
 }
 
-result = RestClient.get '///app/{id}/plan',
+result = RestClient.get 'http://api.saferize.com/app/{id}/plan',
   params: {
   }, headers: headers
 
@@ -3649,10 +3823,11 @@ p JSON.parse(result)
 ```python
 import requests
 headers = {
-  'Accept': 'application/json'
+  'Accept': 'application/json',
+  'Authorization': 'bearer {access-token}'
 }
 
-r = requests.get('///app/{id}/plan', params={
+r = requests.get('http://api.saferize.com/app/{id}/plan', params={
 
 }, headers = headers)
 
@@ -3661,7 +3836,7 @@ print r.json()
 ```
 
 ```java
-URL obj = new URL("///app/{id}/plan");
+URL obj = new URL("http://api.saferize.com/app/{id}/plan");
 HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 con.setRequestMethod("GET");
 int responseCode = con.getResponseCode();
@@ -3689,11 +3864,12 @@ func main() {
 
     headers := map[string][]string{
         "Accept": []string{"application/json"},
+        "Authorization": []string{"bearer {access-token}"},
         
     }
 
     data := bytes.NewBuffer([]byte{jsonReq})
-    req, err := http.NewRequest("GET", "///app/{id}/plan", data)
+    req, err := http.NewRequest("GET", "http://api.saferize.com/app/{id}/plan", data)
     req.Header = headers
 
     client := &http.Client{}
@@ -3705,7 +3881,11 @@ func main() {
 
 `GET /app/{id}/plan`
 
-*Retrieve app plan*
+*Retrieve App plan*
+
+Retrieves the subscription plan associated with the app. Take a look at the [SubscriptionPlan](/#tocSsubscriptionplan) for more details about the attributes of this object.
+
+As you have probably noticed, we haven't exposed an endpoint for creating a subscription plan. The reason for this is we have a separate process for creating the subscription plan. Please contact our [Support](mailto:devs@saferize.com) and we will help you get started.
 
 <h3 id="getAppPlan-parameters">Parameters</h3>
 
@@ -3721,7 +3901,7 @@ func main() {
   "name": "Platinum starter",
   "billingCycle": "YEARLY",
   "active": true,
-  "price": 299
+  "price": 2.99
 }
 ```
 
@@ -3733,9 +3913,440 @@ func main() {
 |401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|No valid `Authentication` header provided.|[Error](#schemaerror)|
 |404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|The specified resource was not found.|[Error](#schemaerror)|
 
+<aside class="success">
+This operation does not require authentication
+</aside>
+
+## setImplementedAppFeatures
+
+<a id="opIdsetImplementedAppFeatures"></a>
+
+> Code samples
+
+```shell
+# You can also use wget
+curl -X PUT http://api.saferize.com/app/{id}/implementedFeatures \
+  -H 'Content-Type: application/json' \
+  -H 'Accept: application/json' \
+  -H 'Authorization: bearer {access-token}'
+
+```
+
+```http
+PUT http://api.saferize.com/app/{id}/implementedFeatures HTTP/1.1
+Host: api.saferize.com
+Content-Type: application/json
+Accept: application/json
+
+```
+
+```javascript
+var headers = {
+  'Content-Type':'application/json',
+  'Accept':'application/json',
+  'Authorization':'bearer {access-token}'
+
+};
+
+$.ajax({
+  url: 'http://api.saferize.com/app/{id}/implementedFeatures',
+  method: 'put',
+
+  headers: headers,
+  success: function(data) {
+    console.log(JSON.stringify(data));
+  }
+})
+
+```
+
+```javascript--nodejs
+const request = require('node-fetch');
+const inputBody = '[
+  "CHAT",
+  "ADVERTISING"
+]';
+const headers = {
+  'Content-Type':'application/json',
+  'Accept':'application/json',
+  'Authorization':'bearer {access-token}'
+
+};
+
+fetch('http://api.saferize.com/app/{id}/implementedFeatures',
+{
+  method: 'PUT',
+  body: inputBody,
+  headers: headers
+})
+.then(function(res) {
+    return res.json();
+}).then(function(body) {
+    console.log(body);
+});
+
+```
+
+```ruby
+require 'rest-client'
+require 'json'
+
+headers = {
+  'Content-Type' => 'application/json',
+  'Accept' => 'application/json',
+  'Authorization' => 'bearer {access-token}'
+}
+
+result = RestClient.put 'http://api.saferize.com/app/{id}/implementedFeatures',
+  params: {
+  }, headers: headers
+
+p JSON.parse(result)
+
+```
+
+```python
+import requests
+headers = {
+  'Content-Type': 'application/json',
+  'Accept': 'application/json',
+  'Authorization': 'bearer {access-token}'
+}
+
+r = requests.put('http://api.saferize.com/app/{id}/implementedFeatures', params={
+
+}, headers = headers)
+
+print r.json()
+
+```
+
+```java
+URL obj = new URL("http://api.saferize.com/app/{id}/implementedFeatures");
+HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+con.setRequestMethod("PUT");
+int responseCode = con.getResponseCode();
+BufferedReader in = new BufferedReader(
+    new InputStreamReader(con.getInputStream()));
+String inputLine;
+StringBuffer response = new StringBuffer();
+while ((inputLine = in.readLine()) != null) {
+    response.append(inputLine);
+}
+in.close();
+System.out.println(response.toString());
+
+```
+
+```go
+package main
+
+import (
+       "bytes"
+       "net/http"
+)
+
+func main() {
+
+    headers := map[string][]string{
+        "Content-Type": []string{"application/json"},
+        "Accept": []string{"application/json"},
+        "Authorization": []string{"bearer {access-token}"},
+        
+    }
+
+    data := bytes.NewBuffer([]byte{jsonReq})
+    req, err := http.NewRequest("PUT", "http://api.saferize.com/app/{id}/implementedFeatures", data)
+    req.Header = headers
+
+    client := &http.Client{}
+    resp, err := client.Do(req)
+    // ...
+}
+
+```
+
+`PUT /app/{id}/implementedFeatures`
+
+*Set implemented app features*
+
+The publicly visible list of implemented features is important for parents to know what features their kids will be interacting with. From this list you can specify which ones the parents can customize when you [set parental features](/#setparentalappfeatures).
+
+WHen setting [AppFeatures](/#tocSappfeature) please make sure you set implemented features (by calling this endpoint), before setting the [parental features](/#setparentalappfeatures).
+
+> Body parameter
+
+```json
+[
+  "CHAT",
+  "ADVERTISING"
+]
+```
+
+<h3 id="setImplementedAppFeatures-parameters">Parameters</h3>
+
+|Parameter|In|Type|Required|Description|
+|---|---|---|---|---|
+|id|path|integer(int64)|true|Unique identifier for the app.|
+|body|body|[AppFeatureNameArray](#schemaappfeaturenamearray)|false|An array of app feature names.|
+
+#### Enumerated Values
+
+|Parameter|Value|
+|---|---|
+|body|ADVERTISING|
+|body|CHAT|
+|body|COMMENTS|
+|body|DATA_COLLECTION|
+|body|IN_APP_PURCHASES|
+|body|LOCATION_SHARING|
+|body|PAID_APP|
+|body|PUSH_NOTIFICATIONS|
+|body|SOCIAL_INTERACTION|
+|body|SUBSCRIPTION|
+
+> Example responses
+
+```json
+[
+  {
+    "id": 12345678,
+    "appId": 12,
+    "name": "DATA_COLLECTION",
+    "implemented": true,
+    "parentPrivilege": true
+  }
+]
+```
+
+<h3 id="setImplementedAppFeatures-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Returns an array of app feature objects.|[[AppFeature]](#schemaappfeature)|
+|400|[Bad Request](https://tools.ietf.org/html/rfc7231#section-6.5.1)|The request was unacceptable, likely due to missing a required parameter.|[Error](#schemaerror)|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|No valid `Authentication` header provided.|[Error](#schemaerror)|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|The specified resource was not found.|[Error](#schemaerror)|
+
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
-None, None ( Scopes: read write )
+BearerAuth
+</aside>
+
+## setParentalAppFeatures
+
+<a id="opIdsetParentalAppFeatures"></a>
+
+> Code samples
+
+```shell
+# You can also use wget
+curl -X PUT http://api.saferize.com/app/{id}/parentalFeatures \
+  -H 'Content-Type: application/json' \
+  -H 'Accept: application/json' \
+  -H 'Authorization: bearer {access-token}'
+
+```
+
+```http
+PUT http://api.saferize.com/app/{id}/parentalFeatures HTTP/1.1
+Host: api.saferize.com
+Content-Type: application/json
+Accept: application/json
+
+```
+
+```javascript
+var headers = {
+  'Content-Type':'application/json',
+  'Accept':'application/json',
+  'Authorization':'bearer {access-token}'
+
+};
+
+$.ajax({
+  url: 'http://api.saferize.com/app/{id}/parentalFeatures',
+  method: 'put',
+
+  headers: headers,
+  success: function(data) {
+    console.log(JSON.stringify(data));
+  }
+})
+
+```
+
+```javascript--nodejs
+const request = require('node-fetch');
+const inputBody = '[
+  "CHAT",
+  "ADVERTISING"
+]';
+const headers = {
+  'Content-Type':'application/json',
+  'Accept':'application/json',
+  'Authorization':'bearer {access-token}'
+
+};
+
+fetch('http://api.saferize.com/app/{id}/parentalFeatures',
+{
+  method: 'PUT',
+  body: inputBody,
+  headers: headers
+})
+.then(function(res) {
+    return res.json();
+}).then(function(body) {
+    console.log(body);
+});
+
+```
+
+```ruby
+require 'rest-client'
+require 'json'
+
+headers = {
+  'Content-Type' => 'application/json',
+  'Accept' => 'application/json',
+  'Authorization' => 'bearer {access-token}'
+}
+
+result = RestClient.put 'http://api.saferize.com/app/{id}/parentalFeatures',
+  params: {
+  }, headers: headers
+
+p JSON.parse(result)
+
+```
+
+```python
+import requests
+headers = {
+  'Content-Type': 'application/json',
+  'Accept': 'application/json',
+  'Authorization': 'bearer {access-token}'
+}
+
+r = requests.put('http://api.saferize.com/app/{id}/parentalFeatures', params={
+
+}, headers = headers)
+
+print r.json()
+
+```
+
+```java
+URL obj = new URL("http://api.saferize.com/app/{id}/parentalFeatures");
+HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+con.setRequestMethod("PUT");
+int responseCode = con.getResponseCode();
+BufferedReader in = new BufferedReader(
+    new InputStreamReader(con.getInputStream()));
+String inputLine;
+StringBuffer response = new StringBuffer();
+while ((inputLine = in.readLine()) != null) {
+    response.append(inputLine);
+}
+in.close();
+System.out.println(response.toString());
+
+```
+
+```go
+package main
+
+import (
+       "bytes"
+       "net/http"
+)
+
+func main() {
+
+    headers := map[string][]string{
+        "Content-Type": []string{"application/json"},
+        "Accept": []string{"application/json"},
+        "Authorization": []string{"bearer {access-token}"},
+        
+    }
+
+    data := bytes.NewBuffer([]byte{jsonReq})
+    req, err := http.NewRequest("PUT", "http://api.saferize.com/app/{id}/parentalFeatures", data)
+    req.Header = headers
+
+    client := &http.Client{}
+    resp, err := client.Do(req)
+    // ...
+}
+
+```
+
+`PUT /app/{id}/parentalFeatures`
+
+*Set parental features*
+
+Parental features allow parents to customize their child's experience with these features. It's up to the developer's discretion to determine which features they wish to expose. 
+
+Please [set implemented features](/#setimplementedappfeatures) before setting parental features.
+
+> Body parameter
+
+```json
+[
+  "CHAT",
+  "ADVERTISING"
+]
+```
+
+<h3 id="setParentalAppFeatures-parameters">Parameters</h3>
+
+|Parameter|In|Type|Required|Description|
+|---|---|---|---|---|
+|id|path|integer(int64)|true|Unique identifier for the app.|
+|body|body|[AppFeatureNameArray](#schemaappfeaturenamearray)|false|An array of app feature names.|
+
+#### Enumerated Values
+
+|Parameter|Value|
+|---|---|
+|body|ADVERTISING|
+|body|CHAT|
+|body|COMMENTS|
+|body|DATA_COLLECTION|
+|body|IN_APP_PURCHASES|
+|body|LOCATION_SHARING|
+|body|PAID_APP|
+|body|PUSH_NOTIFICATIONS|
+|body|SOCIAL_INTERACTION|
+|body|SUBSCRIPTION|
+
+> Example responses
+
+```json
+[
+  {
+    "id": 12345678,
+    "appId": 12,
+    "name": "DATA_COLLECTION",
+    "implemented": true,
+    "parentPrivilege": true
+  }
+]
+```
+
+<h3 id="setParentalAppFeatures-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Returns an array of app feature objects. Bare in mind that the `parental` flag will be set to `false` initially.|[[AppFeature]](#schemaappfeature)|
+|400|[Bad Request](https://tools.ietf.org/html/rfc7231#section-6.5.1)|The request was unacceptable, likely due to missing a required parameter.|[Error](#schemaerror)|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|No valid `Authentication` header provided.|[Error](#schemaerror)|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|The specified resource was not found.|[Error](#schemaerror)|
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+BearerAuth
 </aside>
 
 ## getAppFeatures
@@ -3746,14 +4357,15 @@ None, None ( Scopes: read write )
 
 ```shell
 # You can also use wget
-curl -X GET ///app/{id}/features \
-  -H 'Accept: application/json'
+curl -X GET http://api.saferize.com/app/{id}/features \
+  -H 'Accept: application/json' \
+  -H 'Authorization: bearer {access-token}'
 
 ```
 
 ```http
-GET ///app/{id}/features HTTP/1.1
-Host: null
+GET http://api.saferize.com/app/{id}/features HTTP/1.1
+Host: api.saferize.com
 
 Accept: application/json
 
@@ -3761,12 +4373,13 @@ Accept: application/json
 
 ```javascript
 var headers = {
-  'Accept':'application/json'
+  'Accept':'application/json',
+  'Authorization':'bearer {access-token}'
 
 };
 
 $.ajax({
-  url: '///app/{id}/features',
+  url: 'http://api.saferize.com/app/{id}/features',
   method: 'get',
 
   headers: headers,
@@ -3781,11 +4394,12 @@ $.ajax({
 const request = require('node-fetch');
 
 const headers = {
-  'Accept':'application/json'
+  'Accept':'application/json',
+  'Authorization':'bearer {access-token}'
 
 };
 
-fetch('///app/{id}/features',
+fetch('http://api.saferize.com/app/{id}/features',
 {
   method: 'GET',
 
@@ -3804,10 +4418,11 @@ require 'rest-client'
 require 'json'
 
 headers = {
-  'Accept' => 'application/json'
+  'Accept' => 'application/json',
+  'Authorization' => 'bearer {access-token}'
 }
 
-result = RestClient.get '///app/{id}/features',
+result = RestClient.get 'http://api.saferize.com/app/{id}/features',
   params: {
   }, headers: headers
 
@@ -3818,10 +4433,11 @@ p JSON.parse(result)
 ```python
 import requests
 headers = {
-  'Accept': 'application/json'
+  'Accept': 'application/json',
+  'Authorization': 'bearer {access-token}'
 }
 
-r = requests.get('///app/{id}/features', params={
+r = requests.get('http://api.saferize.com/app/{id}/features', params={
 
 }, headers = headers)
 
@@ -3830,7 +4446,7 @@ print r.json()
 ```
 
 ```java
-URL obj = new URL("///app/{id}/features");
+URL obj = new URL("http://api.saferize.com/app/{id}/features");
 HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 con.setRequestMethod("GET");
 int responseCode = con.getResponseCode();
@@ -3858,11 +4474,12 @@ func main() {
 
     headers := map[string][]string{
         "Accept": []string{"application/json"},
+        "Authorization": []string{"bearer {access-token}"},
         
     }
 
     data := bytes.NewBuffer([]byte{jsonReq})
-    req, err := http.NewRequest("GET", "///app/{id}/features", data)
+    req, err := http.NewRequest("GET", "http://api.saferize.com/app/{id}/features", data)
     req.Header = headers
 
     client := &http.Client{}
@@ -3874,7 +4491,7 @@ func main() {
 
 `GET /app/{id}/features`
 
-*Retrieve app features*
+*Retrieve App features*
 
 <h3 id="getAppFeatures-parameters">Parameters</h3>
 
@@ -3889,7 +4506,7 @@ func main() {
   {
     "id": 12345678,
     "appId": 12,
-    "name": "CHAT",
+    "name": "DATA_COLLECTION",
     "implemented": true,
     "parentPrivilege": true
   }
@@ -3900,712 +4517,20 @@ func main() {
 
 |Status|Meaning|Description|Schema|
 |---|---|---|---|
-|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Returns an array of app feature objects if they exist on the system.|Inline|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Returns an array of app feature objects if they exist on the system.|[[AppFeature]](#schemaappfeature)|
 |401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|No valid `Authentication` header provided.|[Error](#schemaerror)|
 |404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|The specified resource was not found.|[Error](#schemaerror)|
 
-<h3 id="getAppFeatures-responseschema">Response Schema</h3>
-
-Status Code **200**
-
-|Name|Type|Required|Description|
-|---|---|---|---|
-|*anonymous*|[[AppFeature](#schemaappfeature)]|false|No description|
-|» id|integer(int64)|false|Unique identifier for the app feature returned by the system.|
-|» appId|integer(int64)|false|Unique identifier for the app that this app feature is associated with.|
-|» name|[AppFeature/properties/name](#schemaappfeature/properties/name)|false|The app feature's name, meant to be displayable to the customer.|
-|» implemented|boolean|false|Boolean flag indicating whether the feature is implemented.|
-|» parentPrivilege|boolean|false|Boolean flag indicating whether the parents are allowed to turn off/on the feature.|
-
-#### Enumerated Values
-
-|Property|Value|
-|---|---|
-|name|ADVERTISING,|
-|name|CHAT,|
-|name|COMMENTS,|
-|name|DATA_COLLECTION,|
-|name|IN_APP_PURCHASES,|
-|name|LOCATION_SHARING,|
-|name|PAID_APP,|
-|name|PUSH_NOTIFICATIONS,|
-|name|SOCIAL_INTERACTION,|
-|name|SUBSCRIPTION|
-
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
-None, None ( Scopes: read write )
-</aside>
-
-## setImplementedAppFeatures
-
-<a id="opIdsetImplementedAppFeatures"></a>
-
-> Code samples
-
-```shell
-# You can also use wget
-curl -X PUT ///app/{id}/implementedFeatures \
-  -H 'Content-Type: application/json' \
-  -H 'Accept: application/json'
-
-```
-
-```http
-PUT ///app/{id}/implementedFeatures HTTP/1.1
-Host: null
-Content-Type: application/json
-Accept: application/json
-
-```
-
-```javascript
-var headers = {
-  'Content-Type':'application/json',
-  'Accept':'application/json'
-
-};
-
-$.ajax({
-  url: '///app/{id}/implementedFeatures',
-  method: 'put',
-
-  headers: headers,
-  success: function(data) {
-    console.log(JSON.stringify(data));
-  }
-})
-
-```
-
-```javascript--nodejs
-const request = require('node-fetch');
-const inputBody = '{
-  "id": 12,
-  "appUser": {
-    "id": 123,
-    "token": "child_nickname_on_game_1",
-    "app": {
-      "id": 1,
-      "name": "Saferize Example",
-      "platforms": [
-        "ANDROID",
-        "IOS"
-      ],
-      "category": "GAME",
-      "timeRestriction": "ENABLED",
-      "status": "PUBLISHED",
-      "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-      "urlName": "string",
-      "details": [
-        "SOCIAL_INTERACTION",
-        "IN_APP_PURCHASES"
-      ],
-      "email": "developer@example.com"
-    },
-    "child": {
-      "id": 1234567,
-      "firstName": "Sofia",
-      "lastName": "Smith",
-      "birthDate": "2009-01-23T00:00:00.000Z",
-      "family": {
-        "id": 12345,
-        "name": "Smith"
-      },
-      "gender": "FEMALE"
-    },
-    "family": {
-      "id": 12345,
-      "name": "Smith"
-    }
-  },
-  "approvalParent": {
-    "id": 123456,
-    "firstName": "John",
-    "lastName": "Smith",
-    "mobilePhone": 41512345678,
-    "family": {
-      "id": 12345,
-      "name": "Smith"
-    },
-    "email": "parent@example.com"
-  },
-  "family": {
-    "id": 12345,
-    "name": "Smith"
-  },
-  "statusTime": "2017-11-09T14:23:00.000Z",
-  "createdTime": "2017-11-09T14:23:00.000Z",
-  "status": "APPROVED",
-  "parentEmail": "parent@myfamily.com",
-  "parentMobilePhone": 4151234567
-}';
-const headers = {
-  'Content-Type':'application/json',
-  'Accept':'application/json'
-
-};
-
-fetch('///app/{id}/implementedFeatures',
-{
-  method: 'PUT',
-  body: inputBody,
-  headers: headers
-})
-.then(function(res) {
-    return res.json();
-}).then(function(body) {
-    console.log(body);
-});
-
-```
-
-```ruby
-require 'rest-client'
-require 'json'
-
-headers = {
-  'Content-Type' => 'application/json',
-  'Accept' => 'application/json'
-}
-
-result = RestClient.put '///app/{id}/implementedFeatures',
-  params: {
-  }, headers: headers
-
-p JSON.parse(result)
-
-```
-
-```python
-import requests
-headers = {
-  'Content-Type': 'application/json',
-  'Accept': 'application/json'
-}
-
-r = requests.put('///app/{id}/implementedFeatures', params={
-
-}, headers = headers)
-
-print r.json()
-
-```
-
-```java
-URL obj = new URL("///app/{id}/implementedFeatures");
-HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-con.setRequestMethod("PUT");
-int responseCode = con.getResponseCode();
-BufferedReader in = new BufferedReader(
-    new InputStreamReader(con.getInputStream()));
-String inputLine;
-StringBuffer response = new StringBuffer();
-while ((inputLine = in.readLine()) != null) {
-    response.append(inputLine);
-}
-in.close();
-System.out.println(response.toString());
-
-```
-
-```go
-package main
-
-import (
-       "bytes"
-       "net/http"
-)
-
-func main() {
-
-    headers := map[string][]string{
-        "Content-Type": []string{"application/json"},
-        "Accept": []string{"application/json"},
-        
-    }
-
-    data := bytes.NewBuffer([]byte{jsonReq})
-    req, err := http.NewRequest("PUT", "///app/{id}/implementedFeatures", data)
-    req.Header = headers
-
-    client := &http.Client{}
-    resp, err := client.Do(req)
-    // ...
-}
-
-```
-
-`PUT /app/{id}/implementedFeatures`
-
-*Set implemented features*
-
-The publicly visible list of implemented features is important for transparency. From this list you can specify which ones the parents can customize their experience when you [Set parental features](/#operation--app--id--parentalFeatures-put).
-
-> Body parameter
-
-```json
-{
-  "id": 12,
-  "appUser": {
-    "id": 123,
-    "token": "child_nickname_on_game_1",
-    "app": {
-      "id": 1,
-      "name": "Saferize Example",
-      "platforms": [
-        "ANDROID",
-        "IOS"
-      ],
-      "category": "GAME",
-      "timeRestriction": "ENABLED",
-      "status": "PUBLISHED",
-      "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-      "urlName": "string",
-      "details": [
-        "SOCIAL_INTERACTION",
-        "IN_APP_PURCHASES"
-      ],
-      "email": "developer@example.com"
-    },
-    "child": {
-      "id": 1234567,
-      "firstName": "Sofia",
-      "lastName": "Smith",
-      "birthDate": "2009-01-23T00:00:00.000Z",
-      "family": {
-        "id": 12345,
-        "name": "Smith"
-      },
-      "gender": "FEMALE"
-    },
-    "family": {
-      "id": 12345,
-      "name": "Smith"
-    }
-  },
-  "approvalParent": {
-    "id": 123456,
-    "firstName": "John",
-    "lastName": "Smith",
-    "mobilePhone": 41512345678,
-    "family": {
-      "id": 12345,
-      "name": "Smith"
-    },
-    "email": "parent@example.com"
-  },
-  "family": {
-    "id": 12345,
-    "name": "Smith"
-  },
-  "statusTime": "2017-11-09T14:23:00.000Z",
-  "createdTime": "2017-11-09T14:23:00.000Z",
-  "status": "APPROVED",
-  "parentEmail": "parent@myfamily.com",
-  "parentMobilePhone": 4151234567
-}
-```
-
-<h3 id="setImplementedAppFeatures-parameters">Parameters</h3>
-
-|Parameter|In|Type|Required|Description|
-|---|---|---|---|---|
-|id|path|integer(int64)|true|Unique identifier for the app.|
-|body|body|[Approval](#schemaapproval)|true|The new Approval|
-
-> Example responses
-
-```json
-[
-  {
-    "id": 12345678,
-    "appId": 12,
-    "name": "CHAT",
-    "implemented": true,
-    "parentPrivilege": true
-  }
-]
-```
-
-<h3 id="setImplementedAppFeatures-responses">Responses</h3>
-
-|Status|Meaning|Description|Schema|
-|---|---|---|---|
-|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Returns an array of app feature objects.|Inline|
-|400|[Bad Request](https://tools.ietf.org/html/rfc7231#section-6.5.1)|The request was unacceptable, likely due to missing a required parameter.|[Error](#schemaerror)|
-|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|No valid `Authentication` header provided.|[Error](#schemaerror)|
-|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|The specified resource was not found.|[Error](#schemaerror)|
-
-<h3 id="setImplementedAppFeatures-responseschema">Response Schema</h3>
-
-Status Code **200**
-
-|Name|Type|Required|Description|
-|---|---|---|---|
-|*anonymous*|[[AppFeature](#schemaappfeature)]|false|No description|
-|» id|integer(int64)|false|Unique identifier for the app feature returned by the system.|
-|» appId|integer(int64)|false|Unique identifier for the app that this app feature is associated with.|
-|» name|[AppFeature/properties/name](#schemaappfeature/properties/name)|false|The app feature's name, meant to be displayable to the customer.|
-|» implemented|boolean|false|Boolean flag indicating whether the feature is implemented.|
-|» parentPrivilege|boolean|false|Boolean flag indicating whether the parents are allowed to turn off/on the feature.|
-
-#### Enumerated Values
-
-|Property|Value|
-|---|---|
-|name|ADVERTISING,|
-|name|CHAT,|
-|name|COMMENTS,|
-|name|DATA_COLLECTION,|
-|name|IN_APP_PURCHASES,|
-|name|LOCATION_SHARING,|
-|name|PAID_APP,|
-|name|PUSH_NOTIFICATIONS,|
-|name|SOCIAL_INTERACTION,|
-|name|SUBSCRIPTION|
-
-<aside class="warning">
-To perform this operation, you must be authenticated by means of one of the following methods:
-None, None ( Scopes: read write )
-</aside>
-
-## setParentalAppFeatures
-
-<a id="opIdsetParentalAppFeatures"></a>
-
-> Code samples
-
-```shell
-# You can also use wget
-curl -X PUT ///app/{id}/parentalFeatures \
-  -H 'Content-Type: application/json' \
-  -H 'Accept: application/json'
-
-```
-
-```http
-PUT ///app/{id}/parentalFeatures HTTP/1.1
-Host: null
-Content-Type: application/json
-Accept: application/json
-
-```
-
-```javascript
-var headers = {
-  'Content-Type':'application/json',
-  'Accept':'application/json'
-
-};
-
-$.ajax({
-  url: '///app/{id}/parentalFeatures',
-  method: 'put',
-
-  headers: headers,
-  success: function(data) {
-    console.log(JSON.stringify(data));
-  }
-})
-
-```
-
-```javascript--nodejs
-const request = require('node-fetch');
-const inputBody = '{
-  "id": 12,
-  "appUser": {
-    "id": 123,
-    "token": "child_nickname_on_game_1",
-    "app": {
-      "id": 1,
-      "name": "Saferize Example",
-      "platforms": [
-        "ANDROID",
-        "IOS"
-      ],
-      "category": "GAME",
-      "timeRestriction": "ENABLED",
-      "status": "PUBLISHED",
-      "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-      "urlName": "string",
-      "details": [
-        "SOCIAL_INTERACTION",
-        "IN_APP_PURCHASES"
-      ],
-      "email": "developer@example.com"
-    },
-    "child": {
-      "id": 1234567,
-      "firstName": "Sofia",
-      "lastName": "Smith",
-      "birthDate": "2009-01-23T00:00:00.000Z",
-      "family": {
-        "id": 12345,
-        "name": "Smith"
-      },
-      "gender": "FEMALE"
-    },
-    "family": {
-      "id": 12345,
-      "name": "Smith"
-    }
-  },
-  "approvalParent": {
-    "id": 123456,
-    "firstName": "John",
-    "lastName": "Smith",
-    "mobilePhone": 41512345678,
-    "family": {
-      "id": 12345,
-      "name": "Smith"
-    },
-    "email": "parent@example.com"
-  },
-  "family": {
-    "id": 12345,
-    "name": "Smith"
-  },
-  "statusTime": "2017-11-09T14:23:00.000Z",
-  "createdTime": "2017-11-09T14:23:00.000Z",
-  "status": "APPROVED",
-  "parentEmail": "parent@myfamily.com",
-  "parentMobilePhone": 4151234567
-}';
-const headers = {
-  'Content-Type':'application/json',
-  'Accept':'application/json'
-
-};
-
-fetch('///app/{id}/parentalFeatures',
-{
-  method: 'PUT',
-  body: inputBody,
-  headers: headers
-})
-.then(function(res) {
-    return res.json();
-}).then(function(body) {
-    console.log(body);
-});
-
-```
-
-```ruby
-require 'rest-client'
-require 'json'
-
-headers = {
-  'Content-Type' => 'application/json',
-  'Accept' => 'application/json'
-}
-
-result = RestClient.put '///app/{id}/parentalFeatures',
-  params: {
-  }, headers: headers
-
-p JSON.parse(result)
-
-```
-
-```python
-import requests
-headers = {
-  'Content-Type': 'application/json',
-  'Accept': 'application/json'
-}
-
-r = requests.put('///app/{id}/parentalFeatures', params={
-
-}, headers = headers)
-
-print r.json()
-
-```
-
-```java
-URL obj = new URL("///app/{id}/parentalFeatures");
-HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-con.setRequestMethod("PUT");
-int responseCode = con.getResponseCode();
-BufferedReader in = new BufferedReader(
-    new InputStreamReader(con.getInputStream()));
-String inputLine;
-StringBuffer response = new StringBuffer();
-while ((inputLine = in.readLine()) != null) {
-    response.append(inputLine);
-}
-in.close();
-System.out.println(response.toString());
-
-```
-
-```go
-package main
-
-import (
-       "bytes"
-       "net/http"
-)
-
-func main() {
-
-    headers := map[string][]string{
-        "Content-Type": []string{"application/json"},
-        "Accept": []string{"application/json"},
-        
-    }
-
-    data := bytes.NewBuffer([]byte{jsonReq})
-    req, err := http.NewRequest("PUT", "///app/{id}/parentalFeatures", data)
-    req.Header = headers
-
-    client := &http.Client{}
-    resp, err := client.Do(req)
-    // ...
-}
-
-```
-
-`PUT /app/{id}/parentalFeatures`
-
-*Set parental features*
-
-Parental features allow parents to customize their experience with these features. It's up to developer's discretion to determine which features they wish to expose. Please [Set implemented features](/#operation--app--id--implementedFeatures-put) before setting parental features.
-
-> Body parameter
-
-```json
-{
-  "id": 12,
-  "appUser": {
-    "id": 123,
-    "token": "child_nickname_on_game_1",
-    "app": {
-      "id": 1,
-      "name": "Saferize Example",
-      "platforms": [
-        "ANDROID",
-        "IOS"
-      ],
-      "category": "GAME",
-      "timeRestriction": "ENABLED",
-      "status": "PUBLISHED",
-      "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-      "urlName": "string",
-      "details": [
-        "SOCIAL_INTERACTION",
-        "IN_APP_PURCHASES"
-      ],
-      "email": "developer@example.com"
-    },
-    "child": {
-      "id": 1234567,
-      "firstName": "Sofia",
-      "lastName": "Smith",
-      "birthDate": "2009-01-23T00:00:00.000Z",
-      "family": {
-        "id": 12345,
-        "name": "Smith"
-      },
-      "gender": "FEMALE"
-    },
-    "family": {
-      "id": 12345,
-      "name": "Smith"
-    }
-  },
-  "approvalParent": {
-    "id": 123456,
-    "firstName": "John",
-    "lastName": "Smith",
-    "mobilePhone": 41512345678,
-    "family": {
-      "id": 12345,
-      "name": "Smith"
-    },
-    "email": "parent@example.com"
-  },
-  "family": {
-    "id": 12345,
-    "name": "Smith"
-  },
-  "statusTime": "2017-11-09T14:23:00.000Z",
-  "createdTime": "2017-11-09T14:23:00.000Z",
-  "status": "APPROVED",
-  "parentEmail": "parent@myfamily.com",
-  "parentMobilePhone": 4151234567
-}
-```
-
-<h3 id="setParentalAppFeatures-parameters">Parameters</h3>
-
-|Parameter|In|Type|Required|Description|
-|---|---|---|---|---|
-|id|path|integer(int64)|true|Unique identifier for the app.|
-|body|body|[Approval](#schemaapproval)|true|The new Approval|
-
-> Example responses
-
-```json
-[
-  {
-    "id": 12345678,
-    "appId": 12,
-    "name": "CHAT",
-    "implemented": true,
-    "parentPrivilege": true
-  }
-]
-```
-
-<h3 id="setParentalAppFeatures-responses">Responses</h3>
-
-|Status|Meaning|Description|Schema|
-|---|---|---|---|
-|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Returns an array of app feature objects. Bare in mind that the `parental` flag will be set to `false` initially.|Inline|
-|400|[Bad Request](https://tools.ietf.org/html/rfc7231#section-6.5.1)|The request was unacceptable, likely due to missing a required parameter.|[Error](#schemaerror)|
-|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|No valid `Authentication` header provided.|[Error](#schemaerror)|
-|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|The specified resource was not found.|[Error](#schemaerror)|
-
-<h3 id="setParentalAppFeatures-responseschema">Response Schema</h3>
-
-Status Code **200**
-
-|Name|Type|Required|Description|
-|---|---|---|---|
-|*anonymous*|[[AppFeature](#schemaappfeature)]|false|No description|
-|» id|integer(int64)|false|Unique identifier for the app feature returned by the system.|
-|» appId|integer(int64)|false|Unique identifier for the app that this app feature is associated with.|
-|» name|[AppFeature/properties/name](#schemaappfeature/properties/name)|false|The app feature's name, meant to be displayable to the customer.|
-|» implemented|boolean|false|Boolean flag indicating whether the feature is implemented.|
-|» parentPrivilege|boolean|false|Boolean flag indicating whether the parents are allowed to turn off/on the feature.|
-
-#### Enumerated Values
-
-|Property|Value|
-|---|---|
-|name|ADVERTISING,|
-|name|CHAT,|
-|name|COMMENTS,|
-|name|DATA_COLLECTION,|
-|name|IN_APP_PURCHASES,|
-|name|LOCATION_SHARING,|
-|name|PAID_APP,|
-|name|PUSH_NOTIFICATIONS,|
-|name|SOCIAL_INTERACTION,|
-|name|SUBSCRIPTION|
-
-<aside class="warning">
-To perform this operation, you must be authenticated by means of one of the following methods:
-None, None ( Scopes: read write )
+BearerAuth
 </aside>
 
 <h1 id="Saferize-API-Approval">Approval</h1>
 
-An approval is created each time a child creates an account on the app. When this happens, the parent is given an opportunity to respond to the request by either approving or rejecting the app and validating relationship. Moreover, changes on the approval object by the parent reflect child's interaction with the app. The approval object is the intersection of Saferize (reword).
+The [Approval](#tocSapproval) object is the intersection of parent-child-app relationship and as such the most important object on our platform. A child exists as a user on the approval which is managed by the parent. On the other side of this interaction is the app which complies with the conditions contained in the approval.
+
+An approval is created each time a child creates an account on the app. When this happens, the parent is given an opportunity to respond to the request by either approving or rejecting the app and validating the parent-child relationship. Moreover, parental changes on the approval object will reflect on how the child interacts with the app
 
 ## initiateApproval
 
@@ -4615,15 +4540,16 @@ An approval is created each time a child creates an account on the app. When thi
 
 ```shell
 # You can also use wget
-curl -X POST ///approval \
+curl -X POST http://api.saferize.com/approval \
   -H 'Content-Type: application/json' \
-  -H 'Accept: application/json'
+  -H 'Accept: application/json' \
+  -H 'Authorization: bearer {access-token}'
 
 ```
 
 ```http
-POST ///approval HTTP/1.1
-Host: null
+POST http://api.saferize.com/approval HTTP/1.1
+Host: api.saferize.com
 Content-Type: application/json
 Accept: application/json
 
@@ -4632,12 +4558,13 @@ Accept: application/json
 ```javascript
 var headers = {
   'Content-Type':'application/json',
-  'Accept':'application/json'
+  'Accept':'application/json',
+  'Authorization':'bearer {access-token}'
 
 };
 
 $.ajax({
-  url: '///approval',
+  url: 'http://api.saferize.com/approval',
   method: 'post',
 
   headers: headers,
@@ -4651,7 +4578,6 @@ $.ajax({
 ```javascript--nodejs
 const request = require('node-fetch');
 const inputBody = '{
-  "id": 12,
   "appUser": {
     "id": 123,
     "token": "child_nickname_on_game_1",
@@ -4666,11 +4592,9 @@ const inputBody = '{
       "timeRestriction": "ENABLED",
       "status": "PUBLISHED",
       "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+      "shortDescription": "Lorem ipsum dolor sit amet.",
       "urlName": "string",
-      "details": [
-        "SOCIAL_INTERACTION",
-        "IN_APP_PURCHASES"
-      ],
+      "age": 5,
       "email": "developer@example.com"
     },
     "child": {
@@ -4708,15 +4632,17 @@ const inputBody = '{
   "createdTime": "2017-11-09T14:23:00.000Z",
   "status": "APPROVED",
   "parentEmail": "parent@myfamily.com",
-  "parentMobilePhone": 4151234567
+  "parentMobilePhone": 4151234567,
+  "currentState": "ACTIVE"
 }';
 const headers = {
   'Content-Type':'application/json',
-  'Accept':'application/json'
+  'Accept':'application/json',
+  'Authorization':'bearer {access-token}'
 
 };
 
-fetch('///approval',
+fetch('http://api.saferize.com/approval',
 {
   method: 'POST',
   body: inputBody,
@@ -4736,10 +4662,11 @@ require 'json'
 
 headers = {
   'Content-Type' => 'application/json',
-  'Accept' => 'application/json'
+  'Accept' => 'application/json',
+  'Authorization' => 'bearer {access-token}'
 }
 
-result = RestClient.post '///approval',
+result = RestClient.post 'http://api.saferize.com/approval',
   params: {
   }, headers: headers
 
@@ -4751,10 +4678,11 @@ p JSON.parse(result)
 import requests
 headers = {
   'Content-Type': 'application/json',
-  'Accept': 'application/json'
+  'Accept': 'application/json',
+  'Authorization': 'bearer {access-token}'
 }
 
-r = requests.post('///approval', params={
+r = requests.post('http://api.saferize.com/approval', params={
 
 }, headers = headers)
 
@@ -4763,7 +4691,7 @@ print r.json()
 ```
 
 ```java
-URL obj = new URL("///approval");
+URL obj = new URL("http://api.saferize.com/approval");
 HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 con.setRequestMethod("POST");
 int responseCode = con.getResponseCode();
@@ -4792,11 +4720,12 @@ func main() {
     headers := map[string][]string{
         "Content-Type": []string{"application/json"},
         "Accept": []string{"application/json"},
+        "Authorization": []string{"bearer {access-token}"},
         
     }
 
     data := bytes.NewBuffer([]byte{jsonReq})
-    req, err := http.NewRequest("POST", "///approval", data)
+    req, err := http.NewRequest("POST", "http://api.saferize.com/approval", data)
     req.Header = headers
 
     client := &http.Client{}
@@ -4808,15 +4737,16 @@ func main() {
 
 `POST /approval`
 
-*Initiate an approval*
+*Initiate an Approval*
 
-To get parent consent to add a new app user (a child), a new approval object is created.
+A new approval object is created in order to get parent consent to add a new app user (a child).
+
+Your app will be able to initiate approvals once it is pu lished. To learn more about setting up your app, please read our [Quick Start Guide](http://google.com).
 
 > Body parameter
 
 ```json
 {
-  "id": 12,
   "appUser": {
     "id": 123,
     "token": "child_nickname_on_game_1",
@@ -4831,11 +4761,9 @@ To get parent consent to add a new app user (a child), a new approval object is 
       "timeRestriction": "ENABLED",
       "status": "PUBLISHED",
       "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+      "shortDescription": "Lorem ipsum dolor sit amet.",
       "urlName": "string",
-      "details": [
-        "SOCIAL_INTERACTION",
-        "IN_APP_PURCHASES"
-      ],
+      "age": 5,
       "email": "developer@example.com"
     },
     "child": {
@@ -4873,7 +4801,8 @@ To get parent consent to add a new app user (a child), a new approval object is 
   "createdTime": "2017-11-09T14:23:00.000Z",
   "status": "APPROVED",
   "parentEmail": "parent@myfamily.com",
-  "parentMobilePhone": 4151234567
+  "parentMobilePhone": 4151234567,
+  "currentState": "ACTIVE"
 }
 ```
 
@@ -4881,7 +4810,79 @@ To get parent consent to add a new app user (a child), a new approval object is 
 
 |Parameter|In|Type|Required|Description|
 |---|---|---|---|---|
-|body|body|[Approval](#schemaapproval)|true|The new Approval|
+|body|body|object|true|The new Approval|
+|» appUser|body|[AppUser](#schemaappuser)|true|No description|
+|»» id|body|integer(int64)|true|Unique identifier for the app user returned by the system.|
+|»» token|body|string|true|App user's token (username on the app). This is defined by the app and should be user-unique.|
+|»» app|body|[App](#schemaapp)|true|No description|
+|»»» id|body|integer(int64)|true|Unique identifier for the app returned by the system.|
+|»»» name|body|string|true|Name of the app.|
+|»»» platforms|body|[string]|false|Array of enums that specify what platforms are supported by this app.|
+|»»» category|body|string|false|One of the predefined values indicating the category of the app.|
+|»»» timeRestriction|body|string|false|On/off flag for enabling/disabling time restrictions on the app.|
+|»»» status|body|string|false|Current lifecycle status of the app. Please read more on the requirements for [publishing the app](#changestatus).|
+|»»» description|body|string|false|Description of the app. (max. number of characters = 255)|
+|»»» shortDescription|body|string|false|Short description of the app. (max. number of characters = 100)|
+|»»» urlName|body|string|false|Partial url name of this app on Saferize.|
+|»»» age|body|integer(int64)|false|Minimum recommended age of app users.|
+|»»» email|body|string|false|App developer's email.|
+|»» child|body|[Child](#schemachild)|true|No description|
+|»»» id|body|integer(int64)|true|Unique identifier for the child returned by the system.|
+|»»» firstName|body|string|true|Child's first name.|
+|»»» lastName|body|string|false|Child's last name.|
+|»»» birthDate|body|string(date)|true|Child's date of birth.|
+|»»» family|body|[Family](#schemafamily)|true|No description|
+|»»»» id|body|integer(int64)|true|Unique identifier for the family returned by the system.|
+|»»»» name|body|string|true|Family name.|
+|»»» gender|body|string|true|Child's gender.|
+|»» family|body|[Family](#schemafamily)|true|No description|
+|» approvalParent|body|[Parent](#schemaparent)|false|No description|
+|»» id|body|integer(int64)|true|Unique identifier for the parent returned by the system.|
+|»» firstName|body|string|true|Parent's first name.|
+|»» lastName|body|string|true|Parent's last name|
+|»» mobilePhone|body|string(phone)|false|Parent's phone number. The format should be XXXYYYZZZZ (no dashes or parentheses).|
+|»» family|body|[Family](#schemafamily)|true|No description|
+|»» email|body|string(email)|true|Parent's email address.|
+|» family|body|[Family](#schemafamily)|true|No description|
+|» statusTime|body|string(date-time)|true|The time and date of the last status change. The date-time notation as defined by [RFC 3339](https://tools.ietf.org/html/rfc3339).|
+|» createdTime|body|string(date-time)|true|The time and date when this approval was created. The date-time notation as defined by [RFC 3339](https://tools.ietf.org/html/rfc3339).|
+|» status|body|string|true|The approval status|
+|» parentEmail|body|string|false|The email of the parent who received this request|
+|» parentMobilePhone|body|string|false|The phone number of the parent who received this request. The format should be XXXYYYZZZZ (no dashes or parentheses).|
+|» currentState|body|string|false|The approval status|
+
+#### Enumerated Values
+
+|Parameter|Value|
+|---|---|
+|»»» platforms|ANDROID|
+|»»» platforms|IOS|
+|»»» platforms|WINDOWS|
+|»»» platforms|MAC_OS|
+|»»» platforms|LINUX|
+|»»» platforms|APPLE_TV|
+|»»» platforms|ANDROID_TV|
+|»»» platforms|APPLE_WATCH|
+|»»» platforms|ANDROID_WATCH|
+|»»» platforms|XBOX|
+|»»» platforms|NINTENDO|
+|»»» platforms|PLAYSTATION|
+|»»» category|GAME|
+|»»» category|MEDIA|
+|»»» timeRestriction|ENABLED|
+|»»» timeRestriction|DISABLED|
+|»»» status|DRAFT|
+|»»» status|PUBLISHED|
+|»»» status|DELETED|
+|»»» gender|MALE|
+|»»» gender|FEMALE|
+|»»» gender|UNKNOWN|
+|» status|PENDING|
+|» status|NOTIFIED|
+|» status|APPROVED|
+|» status|REJECTED|
+|» currentState|ACTIVE|
+|» currentState|PAUSED|
 
 > Example responses
 
@@ -4902,11 +4903,9 @@ To get parent consent to add a new app user (a child), a new approval object is 
       "timeRestriction": "ENABLED",
       "status": "PUBLISHED",
       "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+      "shortDescription": "Lorem ipsum dolor sit amet.",
       "urlName": "string",
-      "details": [
-        "SOCIAL_INTERACTION",
-        "IN_APP_PURCHASES"
-      ],
+      "age": 5,
       "email": "developer@example.com"
     },
     "child": {
@@ -4944,7 +4943,8 @@ To get parent consent to add a new app user (a child), a new approval object is 
   "createdTime": "2017-11-09T14:23:00.000Z",
   "status": "APPROVED",
   "parentEmail": "parent@myfamily.com",
-  "parentMobilePhone": 4151234567
+  "parentMobilePhone": 4151234567,
+  "currentState": "ACTIVE"
 }
 ```
 
@@ -4953,10 +4953,13 @@ To get parent consent to add a new app user (a child), a new approval object is 
 |Status|Meaning|Description|Schema|
 |---|---|---|---|
 |201|[Created](https://tools.ietf.org/html/rfc7231#section-6.3.2)|Approval Created|[Approval](#schemaapproval)|
+|400|[Bad Request](https://tools.ietf.org/html/rfc7231#section-6.5.1)|The request was unacceptable, likely due to missing a required parameter.|[Error](#schemaerror)|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|No valid `Authentication` header provided.|[Error](#schemaerror)|
+|409|[Conflict](https://tools.ietf.org/html/rfc7231#section-6.5.8)|The request conflicts with another request|[Error](#schemaerror)|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
-None, None ( Scopes: read write )
+BearerAuth
 </aside>
 
 ## getApprovals
@@ -4967,27 +4970,29 @@ None, None ( Scopes: read write )
 
 ```shell
 # You can also use wget
-curl -X GET ///approval \
-  -H 'Accept: */*'
+curl -X GET http://api.saferize.com/approval \
+  -H 'Accept: application/json' \
+  -H 'Authorization: bearer {access-token}'
 
 ```
 
 ```http
-GET ///approval HTTP/1.1
-Host: null
+GET http://api.saferize.com/approval HTTP/1.1
+Host: api.saferize.com
 
-Accept: */*
+Accept: application/json
 
 ```
 
 ```javascript
 var headers = {
-  'Accept':'*/*'
+  'Accept':'application/json',
+  'Authorization':'bearer {access-token}'
 
 };
 
 $.ajax({
-  url: '///approval',
+  url: 'http://api.saferize.com/approval',
   method: 'get',
 
   headers: headers,
@@ -5002,11 +5007,12 @@ $.ajax({
 const request = require('node-fetch');
 
 const headers = {
-  'Accept':'*/*'
+  'Accept':'application/json',
+  'Authorization':'bearer {access-token}'
 
 };
 
-fetch('///approval',
+fetch('http://api.saferize.com/approval',
 {
   method: 'GET',
 
@@ -5025,10 +5031,11 @@ require 'rest-client'
 require 'json'
 
 headers = {
-  'Accept' => '*/*'
+  'Accept' => 'application/json',
+  'Authorization' => 'bearer {access-token}'
 }
 
-result = RestClient.get '///approval',
+result = RestClient.get 'http://api.saferize.com/approval',
   params: {
   }, headers: headers
 
@@ -5039,10 +5046,11 @@ p JSON.parse(result)
 ```python
 import requests
 headers = {
-  'Accept': '*/*'
+  'Accept': 'application/json',
+  'Authorization': 'bearer {access-token}'
 }
 
-r = requests.get('///approval', params={
+r = requests.get('http://api.saferize.com/approval', params={
 
 }, headers = headers)
 
@@ -5051,7 +5059,7 @@ print r.json()
 ```
 
 ```java
-URL obj = new URL("///approval");
+URL obj = new URL("http://api.saferize.com/approval");
 HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 con.setRequestMethod("GET");
 int responseCode = con.getResponseCode();
@@ -5078,12 +5086,13 @@ import (
 func main() {
 
     headers := map[string][]string{
-        "Accept": []string{"*/*"},
+        "Accept": []string{"application/json"},
+        "Authorization": []string{"bearer {access-token}"},
         
     }
 
     data := bytes.NewBuffer([]byte{jsonReq})
-    req, err := http.NewRequest("GET", "///approval", data)
+    req, err := http.NewRequest("GET", "http://api.saferize.com/approval", data)
     req.Header = headers
 
     client := &http.Client{}
@@ -5095,101 +5104,88 @@ func main() {
 
 `GET /approval`
 
-*List all approvals*
+*List App approvals*
+
+Retrieves all the approvals associated with the app.
 
 > Example responses
+
+```json
+[
+  {
+    "id": 12,
+    "appUser": {
+      "id": 123,
+      "token": "child_nickname_on_game_1",
+      "app": {
+        "id": 1,
+        "name": "Saferize Example",
+        "platforms": [
+          "ANDROID",
+          "IOS"
+        ],
+        "category": "GAME",
+        "timeRestriction": "ENABLED",
+        "status": "PUBLISHED",
+        "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+        "shortDescription": "Lorem ipsum dolor sit amet.",
+        "urlName": "string",
+        "age": 5,
+        "email": "developer@example.com"
+      },
+      "child": {
+        "id": 1234567,
+        "firstName": "Sofia",
+        "lastName": "Smith",
+        "birthDate": "2009-01-23T00:00:00.000Z",
+        "family": {
+          "id": 12345,
+          "name": "Smith"
+        },
+        "gender": "FEMALE"
+      },
+      "family": {
+        "id": 12345,
+        "name": "Smith"
+      }
+    },
+    "approvalParent": {
+      "id": 123456,
+      "firstName": "John",
+      "lastName": "Smith",
+      "mobilePhone": 41512345678,
+      "family": {
+        "id": 12345,
+        "name": "Smith"
+      },
+      "email": "parent@example.com"
+    },
+    "family": {
+      "id": 12345,
+      "name": "Smith"
+    },
+    "statusTime": "2017-11-09T14:23:00.000Z",
+    "createdTime": "2017-11-09T14:23:00.000Z",
+    "status": "APPROVED",
+    "parentEmail": "parent@myfamily.com",
+    "parentMobilePhone": 4151234567,
+    "currentState": "ACTIVE"
+  }
+]
+```
 
 <h3 id="getApprovals-responses">Responses</h3>
 
 |Status|Meaning|Description|Schema|
 |---|---|---|---|
-|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Returns all approvals|Inline|
-
-<h3 id="getApprovals-responseschema">Response Schema</h3>
-
-Status Code **200**
-
-|Name|Type|Required|Description|
-|---|---|---|---|
-|*anonymous*|[[Approval](#schemaapproval)]|false|No description|
-|» id|integer(int64)|true|The Approval Id returned by the system|
-|» appUser|[AppUser](#schemaappuser)|true|No description|
-|»» id|integer(int64)|true|The AppUser Id returned by the system|
-|»» token|string|true|A client token for the app. This is defined by the app and should be unique per user of the app.|
-|»» app|[App](#schemaapp)|true|No description|
-|»»» id|integer(int64)|true|Unique identifier for the app returned by the system.|
-|»»» name|string|true|The name of the app.|
-|»»» platforms|[string]|false|An array of enums that specify what platforms are supported by this app.|
-|»»» category|string|false|One of the predifned values indicating the category of the app.|
-|»»» timeRestriction|string|false|On/Off flag for enabling/disabling time restrictions on the app.|
-|»»» status|string|false|Current lifecycle status of the app. Please read more on the requirements for publishing the app.|
-|»»» description|string|false|A description of the app.|
-|»»» urlName|string|false|The partial url name of this app on Saferize.|
-|»»» details|[string]|false|Features implemented on the app.|
-|»»» email|string|false|The app developer's email.|
-|»» child|[Child](#schemachild)|true|No description|
-|»»» id|integer(int64)|true|Unique identifier for the child returned by the system.|
-|»»» firstName|string|true|Child's first name|
-|»»» lastName|string|false|Child's last Name|
-|»»» birthDate|string(date)|true|The childs date of birth|
-|»»» family|[Family](#schemafamily)|true|No description|
-|»»»» id|integer(int64)|true|Unique identifier for the family returned by the system.|
-|»»»» name|string|true|The family name|
-|»»» gender|string|true|The child's gender|
-|»» family|[Family](#schemafamily)|true|No description|
-|» approvalParent|[Parent](#schemaparent)|false|No description|
-|»» id|integer(int64)|true|Unique identifier for the parent returned by the system.|
-|»» firstName|string|true|First Name|
-|»» lastName|string|true|Last Name|
-|»» mobilePhone|string(phone)|false|Mobile Phone. The format should be XXXYYYZZZZ (no dashes or parenthesis)|
-|»» family|[Family](#schemafamily)|true|No description|
-|»» email|string(email)|true|No description|
-|» family|[Family](#schemafamily)|true|No description|
-|» statusTime|string(date-time)|true|The time and date of the last status change|
-|» createdTime|string(date-time)|true|The time and date when this approval was created|
-|» status|string|true|The approval status|
-|» parentEmail|string|false|The email of the parent who received this request|
-|» parentMobilePhone|string|false|The phone number of the parent who received this request|
-
-#### Enumerated Values
-
-|Property|Value|
-|---|---|
-|platforms|ANDROID|
-|platforms|IOS|
-|platforms|WINDOWS|
-|platforms|MAC_OS|
-|platforms|LINUX|
-|platforms|APPLE_TV|
-|platforms|ANDROID_TV|
-|platforms|APPLE_WATCH|
-|platforms|ANDROID_WATCH|
-|platforms|XBOX|
-|platforms|NINTENDO|
-|platforms|PLAYSTATION|
-|category|GAME|
-|category|MEDIA|
-|timeRestriction|ENABLED|
-|timeRestriction|DISABLED|
-|status|DRAFT|
-|status|PUBLISHED|
-|status|DELETED|
-|details|SOCIAL_INTERACTION|
-|details|IN_APP_PURCHASES|
-|details|ADVERTISING|
-|details|PAID_APP|
-|details|SUBSCRIPTION|
-|gender|MALE|
-|gender|FEMALE|
-|gender|UNKNOWN|
-|status|PENDING|
-|status|NOTIFIED|
-|status|APPROVED|
-|status|REJECTED|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Returns an array of approvals associated with the app.|[[Approval]](#schemaapproval)|
+|400|[Bad Request](https://tools.ietf.org/html/rfc7231#section-6.5.1)|The request was unacceptable, likely due to missing a required parameter.|[Error](#schemaerror)|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|No valid `Authentication` header provided.|[Error](#schemaerror)|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|The specified resource was not found.|[Error](#schemaerror)|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
-None, None ( Scopes: read write )
+BearerAuth
 </aside>
 
 ## getApprovalById
@@ -5200,14 +5196,15 @@ None, None ( Scopes: read write )
 
 ```shell
 # You can also use wget
-curl -X GET ///approval/{id} \
-  -H 'Accept: application/json'
+curl -X GET http://api.saferize.com/approval/{id} \
+  -H 'Accept: application/json' \
+  -H 'Authorization: bearer {access-token}'
 
 ```
 
 ```http
-GET ///approval/{id} HTTP/1.1
-Host: null
+GET http://api.saferize.com/approval/{id} HTTP/1.1
+Host: api.saferize.com
 
 Accept: application/json
 
@@ -5215,12 +5212,13 @@ Accept: application/json
 
 ```javascript
 var headers = {
-  'Accept':'application/json'
+  'Accept':'application/json',
+  'Authorization':'bearer {access-token}'
 
 };
 
 $.ajax({
-  url: '///approval/{id}',
+  url: 'http://api.saferize.com/approval/{id}',
   method: 'get',
 
   headers: headers,
@@ -5235,11 +5233,12 @@ $.ajax({
 const request = require('node-fetch');
 
 const headers = {
-  'Accept':'application/json'
+  'Accept':'application/json',
+  'Authorization':'bearer {access-token}'
 
 };
 
-fetch('///approval/{id}',
+fetch('http://api.saferize.com/approval/{id}',
 {
   method: 'GET',
 
@@ -5258,10 +5257,11 @@ require 'rest-client'
 require 'json'
 
 headers = {
-  'Accept' => 'application/json'
+  'Accept' => 'application/json',
+  'Authorization' => 'bearer {access-token}'
 }
 
-result = RestClient.get '///approval/{id}',
+result = RestClient.get 'http://api.saferize.com/approval/{id}',
   params: {
   }, headers: headers
 
@@ -5272,10 +5272,11 @@ p JSON.parse(result)
 ```python
 import requests
 headers = {
-  'Accept': 'application/json'
+  'Accept': 'application/json',
+  'Authorization': 'bearer {access-token}'
 }
 
-r = requests.get('///approval/{id}', params={
+r = requests.get('http://api.saferize.com/approval/{id}', params={
 
 }, headers = headers)
 
@@ -5284,7 +5285,7 @@ print r.json()
 ```
 
 ```java
-URL obj = new URL("///approval/{id}");
+URL obj = new URL("http://api.saferize.com/approval/{id}");
 HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 con.setRequestMethod("GET");
 int responseCode = con.getResponseCode();
@@ -5312,11 +5313,12 @@ func main() {
 
     headers := map[string][]string{
         "Accept": []string{"application/json"},
+        "Authorization": []string{"bearer {access-token}"},
         
     }
 
     data := bytes.NewBuffer([]byte{jsonReq})
-    req, err := http.NewRequest("GET", "///approval/{id}", data)
+    req, err := http.NewRequest("GET", "http://api.saferize.com/approval/{id}", data)
     req.Header = headers
 
     client := &http.Client{}
@@ -5328,13 +5330,13 @@ func main() {
 
 `GET /approval/{id}`
 
-*Retrieve an approval*
+*Retrieve an Approval via identifier*
 
 <h3 id="getApprovalById-parameters">Parameters</h3>
 
 |Parameter|In|Type|Required|Description|
 |---|---|---|---|---|
-|id|path|integer(int64)|true|The identifier of the approval to retrieve.|
+|id|path|integer(int64)|true|Unique identifier for the approval.|
 
 > Example responses
 
@@ -5355,11 +5357,9 @@ func main() {
       "timeRestriction": "ENABLED",
       "status": "PUBLISHED",
       "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+      "shortDescription": "Lorem ipsum dolor sit amet.",
       "urlName": "string",
-      "details": [
-        "SOCIAL_INTERACTION",
-        "IN_APP_PURCHASES"
-      ],
+      "age": 5,
       "email": "developer@example.com"
     },
     "child": {
@@ -5397,7 +5397,8 @@ func main() {
   "createdTime": "2017-11-09T14:23:00.000Z",
   "status": "APPROVED",
   "parentEmail": "parent@myfamily.com",
-  "parentMobilePhone": 4151234567
+  "parentMobilePhone": 4151234567,
+  "currentState": "ACTIVE"
 }
 ```
 
@@ -5405,252 +5406,14 @@ func main() {
 
 |Status|Meaning|Description|Schema|
 |---|---|---|---|
-|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Return a single approval|[Approval](#schemaapproval)|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Returns the approval object associated with the id.|[Approval](#schemaapproval)|
+|400|[Bad Request](https://tools.ietf.org/html/rfc7231#section-6.5.1)|The request was unacceptable, likely due to missing a required parameter.|[Error](#schemaerror)|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|No valid `Authentication` header provided.|[Error](#schemaerror)|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|The specified resource was not found.|[Error](#schemaerror)|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
-None, None ( Scopes: read write )
-</aside>
-
-## changeApproval
-
-<a id="opIdchangeApproval"></a>
-
-> Code samples
-
-```shell
-# You can also use wget
-curl -X PATCH ///approval/{id} \
-  -H 'Content-Type: application/json' \
-  -H 'Accept: application/json'
-
-```
-
-```http
-PATCH ///approval/{id} HTTP/1.1
-Host: null
-Content-Type: application/json
-Accept: application/json
-
-```
-
-```javascript
-var headers = {
-  'Content-Type':'application/json',
-  'Accept':'application/json'
-
-};
-
-$.ajax({
-  url: '///approval/{id}',
-  method: 'patch',
-
-  headers: headers,
-  success: function(data) {
-    console.log(JSON.stringify(data));
-  }
-})
-
-```
-
-```javascript--nodejs
-const request = require('node-fetch');
-const inputBody = '{
-  "op": "replace",
-  "path": "/status",
-  "value": {}
-}';
-const headers = {
-  'Content-Type':'application/json',
-  'Accept':'application/json'
-
-};
-
-fetch('///approval/{id}',
-{
-  method: 'PATCH',
-  body: inputBody,
-  headers: headers
-})
-.then(function(res) {
-    return res.json();
-}).then(function(body) {
-    console.log(body);
-});
-
-```
-
-```ruby
-require 'rest-client'
-require 'json'
-
-headers = {
-  'Content-Type' => 'application/json',
-  'Accept' => 'application/json'
-}
-
-result = RestClient.patch '///approval/{id}',
-  params: {
-  }, headers: headers
-
-p JSON.parse(result)
-
-```
-
-```python
-import requests
-headers = {
-  'Content-Type': 'application/json',
-  'Accept': 'application/json'
-}
-
-r = requests.patch('///approval/{id}', params={
-
-}, headers = headers)
-
-print r.json()
-
-```
-
-```java
-URL obj = new URL("///approval/{id}");
-HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-con.setRequestMethod("PATCH");
-int responseCode = con.getResponseCode();
-BufferedReader in = new BufferedReader(
-    new InputStreamReader(con.getInputStream()));
-String inputLine;
-StringBuffer response = new StringBuffer();
-while ((inputLine = in.readLine()) != null) {
-    response.append(inputLine);
-}
-in.close();
-System.out.println(response.toString());
-
-```
-
-```go
-package main
-
-import (
-       "bytes"
-       "net/http"
-)
-
-func main() {
-
-    headers := map[string][]string{
-        "Content-Type": []string{"application/json"},
-        "Accept": []string{"application/json"},
-        
-    }
-
-    data := bytes.NewBuffer([]byte{jsonReq})
-    req, err := http.NewRequest("PATCH", "///approval/{id}", data)
-    req.Header = headers
-
-    client := &http.Client{}
-    resp, err := client.Do(req)
-    // ...
-}
-
-```
-
-`PATCH /approval/{id}`
-
-*Update an approval*
-
-> Body parameter
-
-```json
-{
-  "op": "replace",
-  "path": "/status",
-  "value": {}
-}
-```
-
-<h3 id="changeApproval-parameters">Parameters</h3>
-
-|Parameter|In|Type|Required|Description|
-|---|---|---|---|---|
-|id|path|integer(int64)|true|The approval Id to get|
-|body|body|[JsonPatch](#schemajsonpatch)|true|A JsonPatch array with the fields to be changed. Current supported fields are ~ status, child, features|
-
-> Example responses
-
-```json
-{
-  "id": 12,
-  "appUser": {
-    "id": 123,
-    "token": "child_nickname_on_game_1",
-    "app": {
-      "id": 1,
-      "name": "Saferize Example",
-      "platforms": [
-        "ANDROID",
-        "IOS"
-      ],
-      "category": "GAME",
-      "timeRestriction": "ENABLED",
-      "status": "PUBLISHED",
-      "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-      "urlName": "string",
-      "details": [
-        "SOCIAL_INTERACTION",
-        "IN_APP_PURCHASES"
-      ],
-      "email": "developer@example.com"
-    },
-    "child": {
-      "id": 1234567,
-      "firstName": "Sofia",
-      "lastName": "Smith",
-      "birthDate": "2009-01-23T00:00:00.000Z",
-      "family": {
-        "id": 12345,
-        "name": "Smith"
-      },
-      "gender": "FEMALE"
-    },
-    "family": {
-      "id": 12345,
-      "name": "Smith"
-    }
-  },
-  "approvalParent": {
-    "id": 123456,
-    "firstName": "John",
-    "lastName": "Smith",
-    "mobilePhone": 41512345678,
-    "family": {
-      "id": 12345,
-      "name": "Smith"
-    },
-    "email": "parent@example.com"
-  },
-  "family": {
-    "id": 12345,
-    "name": "Smith"
-  },
-  "statusTime": "2017-11-09T14:23:00.000Z",
-  "createdTime": "2017-11-09T14:23:00.000Z",
-  "status": "APPROVED",
-  "parentEmail": "parent@myfamily.com",
-  "parentMobilePhone": 4151234567
-}
-```
-
-<h3 id="changeApproval-responses">Responses</h3>
-
-|Status|Meaning|Description|Schema|
-|---|---|---|---|
-|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Return the changed approval|[Approval](#schemaapproval)|
-
-<aside class="warning">
-To perform this operation, you must be authenticated by means of one of the following methods:
-None, None ( Scopes: read write )
+BearerAuth
 </aside>
 
 ## getApprovalByToken
@@ -5661,14 +5424,15 @@ None, None ( Scopes: read write )
 
 ```shell
 # You can also use wget
-curl -X GET ///approval/token/{token} \
-  -H 'Accept: application/json'
+curl -X GET http://api.saferize.com/approval/token/{token} \
+  -H 'Accept: application/json' \
+  -H 'Authorization: bearer {access-token}'
 
 ```
 
 ```http
-GET ///approval/token/{token} HTTP/1.1
-Host: null
+GET http://api.saferize.com/approval/token/{token} HTTP/1.1
+Host: api.saferize.com
 
 Accept: application/json
 
@@ -5676,12 +5440,13 @@ Accept: application/json
 
 ```javascript
 var headers = {
-  'Accept':'application/json'
+  'Accept':'application/json',
+  'Authorization':'bearer {access-token}'
 
 };
 
 $.ajax({
-  url: '///approval/token/{token}',
+  url: 'http://api.saferize.com/approval/token/{token}',
   method: 'get',
 
   headers: headers,
@@ -5696,11 +5461,12 @@ $.ajax({
 const request = require('node-fetch');
 
 const headers = {
-  'Accept':'application/json'
+  'Accept':'application/json',
+  'Authorization':'bearer {access-token}'
 
 };
 
-fetch('///approval/token/{token}',
+fetch('http://api.saferize.com/approval/token/{token}',
 {
   method: 'GET',
 
@@ -5719,10 +5485,11 @@ require 'rest-client'
 require 'json'
 
 headers = {
-  'Accept' => 'application/json'
+  'Accept' => 'application/json',
+  'Authorization' => 'bearer {access-token}'
 }
 
-result = RestClient.get '///approval/token/{token}',
+result = RestClient.get 'http://api.saferize.com/approval/token/{token}',
   params: {
   }, headers: headers
 
@@ -5733,10 +5500,11 @@ p JSON.parse(result)
 ```python
 import requests
 headers = {
-  'Accept': 'application/json'
+  'Accept': 'application/json',
+  'Authorization': 'bearer {access-token}'
 }
 
-r = requests.get('///approval/token/{token}', params={
+r = requests.get('http://api.saferize.com/approval/token/{token}', params={
 
 }, headers = headers)
 
@@ -5745,7 +5513,7 @@ print r.json()
 ```
 
 ```java
-URL obj = new URL("///approval/token/{token}");
+URL obj = new URL("http://api.saferize.com/approval/token/{token}");
 HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 con.setRequestMethod("GET");
 int responseCode = con.getResponseCode();
@@ -5773,11 +5541,12 @@ func main() {
 
     headers := map[string][]string{
         "Accept": []string{"application/json"},
+        "Authorization": []string{"bearer {access-token}"},
         
     }
 
     data := bytes.NewBuffer([]byte{jsonReq})
-    req, err := http.NewRequest("GET", "///approval/token/{token}", data)
+    req, err := http.NewRequest("GET", "http://api.saferize.com/approval/token/{token}", data)
     req.Header = headers
 
     client := &http.Client{}
@@ -5789,13 +5558,13 @@ func main() {
 
 `GET /approval/token/{token}`
 
-*Retrieve an approval via token*
+*Retrieve an Approval via token*
 
 <h3 id="getApprovalByToken-parameters">Parameters</h3>
 
 |Parameter|In|Type|Required|Description|
 |---|---|---|---|---|
-|token|path|integer(int64)|true|The unique token assigned by the app to the approval.|
+|token|path|integer(int64)|true|The unique token assigned by the app to the user.|
 
 > Example responses
 
@@ -5816,11 +5585,9 @@ func main() {
       "timeRestriction": "ENABLED",
       "status": "PUBLISHED",
       "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+      "shortDescription": "Lorem ipsum dolor sit amet.",
       "urlName": "string",
-      "details": [
-        "SOCIAL_INTERACTION",
-        "IN_APP_PURCHASES"
-      ],
+      "age": 5,
       "email": "developer@example.com"
     },
     "child": {
@@ -5858,7 +5625,8 @@ func main() {
   "createdTime": "2017-11-09T14:23:00.000Z",
   "status": "APPROVED",
   "parentEmail": "parent@myfamily.com",
-  "parentMobilePhone": 4151234567
+  "parentMobilePhone": 4151234567,
+  "currentState": "ACTIVE"
 }
 ```
 
@@ -5866,34 +5634,40 @@ func main() {
 
 |Status|Meaning|Description|Schema|
 |---|---|---|---|
-|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Return approval|[Approval](#schemaapproval)|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Returns the approval object associated with the token.|[Approval](#schemaapproval)|
+|400|[Bad Request](https://tools.ietf.org/html/rfc7231#section-6.5.1)|The request was unacceptable, likely due to missing a required parameter.|[Error](#schemaerror)|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|No valid `Authentication` header provided.|[Error](#schemaerror)|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|The specified resource was not found.|[Error](#schemaerror)|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
-None, None ( Scopes: read write )
+BearerAuth
 </aside>
 
-<h1 id="Saferize-API-Family">Family</h1>
+<h1 id="Saferize-API-Session">Session</h1>
 
-Family methods provide access to information and operations relating to the Family. You can create, retrieve and update a family as well as list all it's members. You may also view all the validations of this family (such as Microtransaction, Email, SMS & Questionnaire)
+A session is established at the point of the authentication, and will last for an hour. To perform majority of the operations on our platform, whether it be reading or writing, you must be authenticated.
 
-## createFamily
+Each subsuquent call will extend the session by an extra hour. If the communication is idle for an hour, the session will expire, and will need to be established again.
 
-<a id="opIdcreateFamily"></a>
+## createSession
+
+<a id="opIdcreateSession"></a>
 
 > Code samples
 
 ```shell
 # You can also use wget
-curl -X POST ///family \
+curl -X POST http://api.saferize.com/session \
   -H 'Content-Type: application/json' \
-  -H 'Accept: application/json'
+  -H 'Accept: application/json' \
+  -H 'Authorization: bearer {access-token}'
 
 ```
 
 ```http
-POST ///family HTTP/1.1
-Host: null
+POST http://api.saferize.com/session HTTP/1.1
+Host: api.saferize.com
 Content-Type: application/json
 Accept: application/json
 
@@ -5902,12 +5676,13 @@ Accept: application/json
 ```javascript
 var headers = {
   'Content-Type':'application/json',
-  'Accept':'application/json'
+  'Accept':'application/json',
+  'Authorization':'bearer {access-token}'
 
 };
 
 $.ajax({
-  url: '///family',
+  url: 'http://api.saferize.com/session',
   method: 'post',
 
   headers: headers,
@@ -5921,16 +5696,17 @@ $.ajax({
 ```javascript--nodejs
 const request = require('node-fetch');
 const inputBody = '{
-  "id": 12345,
-  "name": "Smith"
+  "accessKey": "jane.developer@saferize.com",
+  "secretKey": "SuperHardPassword!1"
 }';
 const headers = {
   'Content-Type':'application/json',
-  'Accept':'application/json'
+  'Accept':'application/json',
+  'Authorization':'bearer {access-token}'
 
 };
 
-fetch('///family',
+fetch('http://api.saferize.com/session',
 {
   method: 'POST',
   body: inputBody,
@@ -5950,10 +5726,11 @@ require 'json'
 
 headers = {
   'Content-Type' => 'application/json',
-  'Accept' => 'application/json'
+  'Accept' => 'application/json',
+  'Authorization' => 'bearer {access-token}'
 }
 
-result = RestClient.post '///family',
+result = RestClient.post 'http://api.saferize.com/session',
   params: {
   }, headers: headers
 
@@ -5965,10 +5742,11 @@ p JSON.parse(result)
 import requests
 headers = {
   'Content-Type': 'application/json',
-  'Accept': 'application/json'
+  'Accept': 'application/json',
+  'Authorization': 'bearer {access-token}'
 }
 
-r = requests.post('///family', params={
+r = requests.post('http://api.saferize.com/session', params={
 
 }, headers = headers)
 
@@ -5977,7 +5755,7 @@ print r.json()
 ```
 
 ```java
-URL obj = new URL("///family");
+URL obj = new URL("http://api.saferize.com/session");
 HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 con.setRequestMethod("POST");
 int responseCode = con.getResponseCode();
@@ -6006,11 +5784,12 @@ func main() {
     headers := map[string][]string{
         "Content-Type": []string{"application/json"},
         "Accept": []string{"application/json"},
+        "Authorization": []string{"bearer {access-token}"},
         
     }
 
     data := bytes.NewBuffer([]byte{jsonReq})
-    req, err := http.NewRequest("POST", "///family", data)
+    req, err := http.NewRequest("POST", "http://api.saferize.com/session", data)
     req.Header = headers
 
     client := &http.Client{}
@@ -6020,77 +5799,95 @@ func main() {
 
 ```
 
-`POST /family`
+`POST /session`
 
-*Create a family*
-
-The family object is created when a child becomes an app user by parent consent. The family members are associated with this object.
+*Create a developer session*
 
 > Body parameter
 
 ```json
 {
-  "id": 12345,
-  "name": "Smith"
+  "accessKey": "jane.developer@saferize.com",
+  "secretKey": "SuperHardPassword!1"
 }
 ```
 
-<h3 id="createFamily-parameters">Parameters</h3>
+<h3 id="createSession-parameters">Parameters</h3>
 
 |Parameter|In|Type|Required|Description|
 |---|---|---|---|---|
-|body|body|[Family](#schemafamily)|true|The new Family to be created|
+|body|body|object|true|Credentials of the subject that is attempting to create the session.|
+|» accessKey|body|string|true|Access key of the developer that is attempting to create the session.|
+|» secretKey|body|string|true|Secret key of the developer that is attempting to create the session.|
 
 > Example responses
 
 ```json
 {
-  "id": 12345,
-  "name": "Smith"
+  "duration": 3600,
+  "subject": {
+    "id": 1234,
+    "firstName": "Jane",
+    "lastName": "Doe",
+    "email": "jane.doe@example.com",
+    "mobilePhone": "415-123-4567",
+    "company": "Saferize",
+    "country": "CA"
+  },
+  "origin": "127.0.0.1",
+  "signatureCode": "8479dd81-4a33-4806-902f-52cbbe93c240",
+  "startedAt": "2017-07-21T17:32:28Z",
+  "state": "ACTIVE",
+  "uuid": "ce11cccc-1bdb-430f-8b9f-ee02079e4fe5",
+  "token": "VjF8MTA5ODh8Y29tLnNhZmVyaXplLmNvcmUuZW50aXRpZXMucGFyZW50LlBhcmVudHwxNTI1MjkyNjU2MTA4fGNlMTFjY2NjLTFiZGItNDMwZi04YjlmLWVlMDIwNzllNGZlNQ=="
 }
 ```
 
-<h3 id="createFamily-responses">Responses</h3>
+<h3 id="createSession-responses">Responses</h3>
 
 |Status|Meaning|Description|Schema|
 |---|---|---|---|
-|201|[Created](https://tools.ietf.org/html/rfc7231#section-6.3.2)|Return the new Family|[Family](#schemafamily)|
+|201|[Created](https://tools.ietf.org/html/rfc7231#section-6.3.2)|Returns the session object if the creation succeeded.|[Session](#schemasession)|
+|400|[Bad Request](https://tools.ietf.org/html/rfc7231#section-6.5.1)|The request was unacceptable, likely due to missing a required parameter.|[Error](#schemaerror)|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|No valid `Authentication` header provided.|[Error](#schemaerror)|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
-None, None ( Scopes: read write )
+BearerAuth
 </aside>
 
-## getFamily
+## createAppUserSession
 
-<a id="opIdgetFamily"></a>
+<a id="opIdcreateAppUserSession"></a>
 
 > Code samples
 
 ```shell
 # You can also use wget
-curl -X GET ///family/me \
-  -H 'Accept: */*'
+curl -X POST http://api.saferize.com/session/app/{token} \
+  -H 'Accept: application/json' \
+  -H 'Authorization: bearer {access-token}'
 
 ```
 
 ```http
-GET ///family/me HTTP/1.1
-Host: null
+POST http://api.saferize.com/session/app/{token} HTTP/1.1
+Host: api.saferize.com
 
-Accept: */*
+Accept: application/json
 
 ```
 
 ```javascript
 var headers = {
-  'Accept':'*/*'
+  'Accept':'application/json',
+  'Authorization':'bearer {access-token}'
 
 };
 
 $.ajax({
-  url: '///family/me',
-  method: 'get',
+  url: 'http://api.saferize.com/session/app/{token}',
+  method: 'post',
 
   headers: headers,
   success: function(data) {
@@ -6104,13 +5901,14 @@ $.ajax({
 const request = require('node-fetch');
 
 const headers = {
-  'Accept':'*/*'
+  'Accept':'application/json',
+  'Authorization':'bearer {access-token}'
 
 };
 
-fetch('///family/me',
+fetch('http://api.saferize.com/session/app/{token}',
 {
-  method: 'GET',
+  method: 'POST',
 
   headers: headers
 })
@@ -6127,10 +5925,11 @@ require 'rest-client'
 require 'json'
 
 headers = {
-  'Accept' => '*/*'
+  'Accept' => 'application/json',
+  'Authorization' => 'bearer {access-token}'
 }
 
-result = RestClient.get '///family/me',
+result = RestClient.post 'http://api.saferize.com/session/app/{token}',
   params: {
   }, headers: headers
 
@@ -6141,10 +5940,11 @@ p JSON.parse(result)
 ```python
 import requests
 headers = {
-  'Accept': '*/*'
+  'Accept': 'application/json',
+  'Authorization': 'bearer {access-token}'
 }
 
-r = requests.get('///family/me', params={
+r = requests.post('http://api.saferize.com/session/app/{token}', params={
 
 }, headers = headers)
 
@@ -6153,9 +5953,9 @@ print r.json()
 ```
 
 ```java
-URL obj = new URL("///family/me");
+URL obj = new URL("http://api.saferize.com/session/app/{token}");
 HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-con.setRequestMethod("GET");
+con.setRequestMethod("POST");
 int responseCode = con.getResponseCode();
 BufferedReader in = new BufferedReader(
     new InputStreamReader(con.getInputStream()));
@@ -6180,12 +5980,13 @@ import (
 func main() {
 
     headers := map[string][]string{
-        "Accept": []string{"*/*"},
+        "Accept": []string{"application/json"},
+        "Authorization": []string{"bearer {access-token}"},
         
     }
 
     data := bytes.NewBuffer([]byte{jsonReq})
-    req, err := http.NewRequest("GET", "///family/me", data)
+    req, err := http.NewRequest("POST", "http://api.saferize.com/session/app/{token}", data)
     req.Header = headers
 
     client := &http.Client{}
@@ -6195,1469 +5996,122 @@ func main() {
 
 ```
 
-`GET /family/me`
+`POST /session/app/{token}`
 
-*Retrieve your family*
+*Create an app user session*
 
-> Example responses
-
-<h3 id="getFamily-responses">Responses</h3>
-
-|Status|Meaning|Description|Schema|
-|---|---|---|---|
-|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Return the Family|[Family](#schemafamily)|
-
-<aside class="warning">
-To perform this operation, you must be authenticated by means of one of the following methods:
-None, None ( Scopes: read write )
-</aside>
-
-## updateFamily
-
-<a id="opIdupdateFamily"></a>
-
-> Code samples
-
-```shell
-# You can also use wget
-curl -X PUT ///family/me \
-  -H 'Content-Type: application/json' \
-  -H 'Accept: */*'
-
-```
-
-```http
-PUT ///family/me HTTP/1.1
-Host: null
-Content-Type: application/json
-Accept: */*
-
-```
-
-```javascript
-var headers = {
-  'Content-Type':'application/json',
-  'Accept':'*/*'
-
-};
-
-$.ajax({
-  url: '///family/me',
-  method: 'put',
-
-  headers: headers,
-  success: function(data) {
-    console.log(JSON.stringify(data));
-  }
-})
-
-```
-
-```javascript--nodejs
-const request = require('node-fetch');
-const inputBody = '{
-  "id": 12345,
-  "name": "Smith"
-}';
-const headers = {
-  'Content-Type':'application/json',
-  'Accept':'*/*'
-
-};
-
-fetch('///family/me',
-{
-  method: 'PUT',
-  body: inputBody,
-  headers: headers
-})
-.then(function(res) {
-    return res.json();
-}).then(function(body) {
-    console.log(body);
-});
-
-```
-
-```ruby
-require 'rest-client'
-require 'json'
-
-headers = {
-  'Content-Type' => 'application/json',
-  'Accept' => '*/*'
-}
-
-result = RestClient.put '///family/me',
-  params: {
-  }, headers: headers
-
-p JSON.parse(result)
-
-```
-
-```python
-import requests
-headers = {
-  'Content-Type': 'application/json',
-  'Accept': '*/*'
-}
-
-r = requests.put('///family/me', params={
-
-}, headers = headers)
-
-print r.json()
-
-```
-
-```java
-URL obj = new URL("///family/me");
-HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-con.setRequestMethod("PUT");
-int responseCode = con.getResponseCode();
-BufferedReader in = new BufferedReader(
-    new InputStreamReader(con.getInputStream()));
-String inputLine;
-StringBuffer response = new StringBuffer();
-while ((inputLine = in.readLine()) != null) {
-    response.append(inputLine);
-}
-in.close();
-System.out.println(response.toString());
-
-```
-
-```go
-package main
-
-import (
-       "bytes"
-       "net/http"
-)
-
-func main() {
-
-    headers := map[string][]string{
-        "Content-Type": []string{"application/json"},
-        "Accept": []string{"*/*"},
-        
-    }
-
-    data := bytes.NewBuffer([]byte{jsonReq})
-    req, err := http.NewRequest("PUT", "///family/me", data)
-    req.Header = headers
-
-    client := &http.Client{}
-    resp, err := client.Do(req)
-    // ...
-}
-
-```
-
-`PUT /family/me`
-
-*Update your family*
-
-> Body parameter
-
-```json
-{
-  "id": 12345,
-  "name": "Smith"
-}
-```
-
-<h3 id="updateFamily-parameters">Parameters</h3>
+<h3 id="createAppUserSession-parameters">Parameters</h3>
 
 |Parameter|In|Type|Required|Description|
 |---|---|---|---|---|
-|body|body|[Family](#schemafamily)|true|The changed family.|
+|token|path|string|true|Unique username (alias) for the app user on the app.|
 
 > Example responses
 
-<h3 id="updateFamily-responses">Responses</h3>
+```json
+{
+  "id": 12345678,
+  "approval": {
+    "id": 12,
+    "appUser": {
+      "id": 123,
+      "token": "child_nickname_on_game_1",
+      "app": {
+        "id": 1,
+        "name": "Saferize Example",
+        "platforms": [
+          "ANDROID",
+          "IOS"
+        ],
+        "category": "GAME",
+        "timeRestriction": "ENABLED",
+        "status": "PUBLISHED",
+        "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+        "shortDescription": "Lorem ipsum dolor sit amet.",
+        "urlName": "string",
+        "age": 5,
+        "email": "developer@example.com"
+      },
+      "child": {
+        "id": 1234567,
+        "firstName": "Sofia",
+        "lastName": "Smith",
+        "birthDate": "2009-01-23T00:00:00.000Z",
+        "family": {
+          "id": 12345,
+          "name": "Smith"
+        },
+        "gender": "FEMALE"
+      },
+      "family": {
+        "id": 12345,
+        "name": "Smith"
+      }
+    },
+    "approvalParent": {
+      "id": 123456,
+      "firstName": "John",
+      "lastName": "Smith",
+      "mobilePhone": 41512345678,
+      "family": {
+        "id": 12345,
+        "name": "Smith"
+      },
+      "email": "parent@example.com"
+    },
+    "family": {
+      "id": 12345,
+      "name": "Smith"
+    },
+    "statusTime": "2017-11-09T14:23:00.000Z",
+    "createdTime": "2017-11-09T14:23:00.000Z",
+    "status": "APPROVED",
+    "parentEmail": "parent@myfamily.com",
+    "parentMobilePhone": 4151234567,
+    "currentState": "ACTIVE"
+  },
+  "hostname": "183.241.21.10"
+}
+```
+
+<h3 id="createAppUserSession-responses">Responses</h3>
 
 |Status|Meaning|Description|Schema|
 |---|---|---|---|
-|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|The changed Family|[Family](#schemafamily)|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Returns the app usage session object if the creation succeeded.|[AppUsageSession](#schemaappusagesession)|
+|400|[Bad Request](https://tools.ietf.org/html/rfc7231#section-6.5.1)|The request was unacceptable, likely due to missing a required parameter.|[Error](#schemaerror)|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|No valid `Authentication` header provided.|[Error](#schemaerror)|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
-None, None ( Scopes: read write )
+BearerAuth
 </aside>
 
-<h1 id="Saferize-API-Child">Child</h1>
 
-The child object represents a child who can be on many different approvals (correlating to the number of the apps the user is registered on). You can create, retrieve and update a child. You may also view all the approvals associated with the child.
+<h1 id="Saferize-API-Events">Events</h1>
 
-## getChildren
+Events are our way of letting you know when something interesting has happened in relation to your app.
 
-<a id="opIdgetChildren"></a>
+Events occur when the state of another API resource changes. The state of that resource at the time of the change is embedded in the event's data fields.
 
-> Code samples
+We will deliver these events to you through HTTP Post request to the **webhookURL** that you specified when [setting app configuration](#opIdupdateAppConfig).
 
-```shell
-# You can also use wget
-curl -X GET ///child \
-  -H 'Accept: */*'
+## Types of event
 
-```
+This is a list of all the types of events we currently send. We may add more at any time, so in developing and maintaing your code, you should not assume that only these types exist.
 
-```http
-GET ///child HTTP/1.1
-Host: null
+<a id="eventTypes"></a>
 
-Accept: */*
-
-```
-
-```javascript
-var headers = {
-  'Accept':'*/*'
-
-};
-
-$.ajax({
-  url: '///child',
-  method: 'get',
-
-  headers: headers,
-  success: function(data) {
-    console.log(JSON.stringify(data));
-  }
-})
-
-```
-
-```javascript--nodejs
-const request = require('node-fetch');
-
-const headers = {
-  'Accept':'*/*'
-
-};
-
-fetch('///child',
-{
-  method: 'GET',
-
-  headers: headers
-})
-.then(function(res) {
-    return res.json();
-}).then(function(body) {
-    console.log(body);
-});
-
-```
-
-```ruby
-require 'rest-client'
-require 'json'
-
-headers = {
-  'Accept' => '*/*'
-}
-
-result = RestClient.get '///child',
-  params: {
-  }, headers: headers
-
-p JSON.parse(result)
-
-```
-
-```python
-import requests
-headers = {
-  'Accept': '*/*'
-}
-
-r = requests.get('///child', params={
-
-}, headers = headers)
-
-print r.json()
-
-```
-
-```java
-URL obj = new URL("///child");
-HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-con.setRequestMethod("GET");
-int responseCode = con.getResponseCode();
-BufferedReader in = new BufferedReader(
-    new InputStreamReader(con.getInputStream()));
-String inputLine;
-StringBuffer response = new StringBuffer();
-while ((inputLine = in.readLine()) != null) {
-    response.append(inputLine);
-}
-in.close();
-System.out.println(response.toString());
-
-```
-
-```go
-package main
-
-import (
-       "bytes"
-       "net/http"
-)
-
-func main() {
-
-    headers := map[string][]string{
-        "Accept": []string{"*/*"},
-        
-    }
-
-    data := bytes.NewBuffer([]byte{jsonReq})
-    req, err := http.NewRequest("GET", "///child", data)
-    req.Header = headers
-
-    client := &http.Client{}
-    resp, err := client.Do(req)
-    // ...
-}
-
-```
-
-`GET /child`
-
-*Get all children members of the family*
-
-> Example responses
-
-<h3 id="getChildren-responses">Responses</h3>
-
-|Status|Meaning|Description|Schema|
-|---|---|---|---|
-|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Returns an array of Child|Inline|
-
-<h3 id="getChildren-responseschema">Response Schema</h3>
-
-Status Code **200**
-
-|Name|Type|Required|Description|
-|---|---|---|---|
-|*anonymous*|[[Child](#schemachild)]|false|No description|
-|» id|integer(int64)|true|Unique identifier for the child returned by the system.|
-|» firstName|string|true|Child's first name|
-|» lastName|string|false|Child's last Name|
-|» birthDate|string(date)|true|The childs date of birth|
-|» family|[Family](#schemafamily)|true|No description|
-|»» id|integer(int64)|true|Unique identifier for the family returned by the system.|
-|»» name|string|true|The family name|
-|» gender|string|true|The child's gender|
-
-#### Enumerated Values
-
-|Property|Value|
+|Event|Notes|
 |---|---|
-|gender|MALE|
-|gender|FEMALE|
-|gender|UNKNOWN|
+|ApprovalCreatedEvent|Gets fired when the child signs up for the game. Subsequently, and approval object is created.|
+|ApprovalStatusChangedEvent|Whenever a managing parent changes the status of the Approval, your app will be notified.|
+|UsageTimerCreatedEvent|Whenever a managing parent sets new time restrictions for their child (assuming you enabled [time restrictions](#opIdchangeTimeRestriction)), your app will be notified|
+|ApprovalStateChangedEvent|Whenever the managing parent decides to temporarily pause the game their child is playing, your app will be notified.|
 
-<aside class="warning">
-To perform this operation, you must be authenticated by means of one of the following methods:
-None, None ( Scopes: read write )
-</aside>
 
-## createChild
-
-<a id="opIdcreateChild"></a>
-
-> Code samples
-
-```shell
-# You can also use wget
-curl -X POST ///child \
-  -H 'Content-Type: application/json' \
-  -H 'Accept: */*'
-
-```
-
-```http
-POST ///child HTTP/1.1
-Host: null
-Content-Type: application/json
-Accept: */*
-
-```
-
-```javascript
-var headers = {
-  'Content-Type':'application/json',
-  'Accept':'*/*'
-
-};
-
-$.ajax({
-  url: '///child',
-  method: 'post',
-
-  headers: headers,
-  success: function(data) {
-    console.log(JSON.stringify(data));
-  }
-})
-
-```
-
-```javascript--nodejs
-const request = require('node-fetch');
-const inputBody = '{
-  "id": 1234567,
-  "firstName": "Sofia",
-  "lastName": "Smith",
-  "birthDate": "2009-01-23T00:00:00.000Z",
-  "family": {
-    "id": 12345,
-    "name": "Smith"
-  },
-  "gender": "FEMALE"
-}';
-const headers = {
-  'Content-Type':'application/json',
-  'Accept':'*/*'
-
-};
-
-fetch('///child',
-{
-  method: 'POST',
-  body: inputBody,
-  headers: headers
-})
-.then(function(res) {
-    return res.json();
-}).then(function(body) {
-    console.log(body);
-});
-
-```
-
-```ruby
-require 'rest-client'
-require 'json'
-
-headers = {
-  'Content-Type' => 'application/json',
-  'Accept' => '*/*'
-}
-
-result = RestClient.post '///child',
-  params: {
-  }, headers: headers
-
-p JSON.parse(result)
-
-```
-
-```python
-import requests
-headers = {
-  'Content-Type': 'application/json',
-  'Accept': '*/*'
-}
-
-r = requests.post('///child', params={
-
-}, headers = headers)
-
-print r.json()
-
-```
-
-```java
-URL obj = new URL("///child");
-HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-con.setRequestMethod("POST");
-int responseCode = con.getResponseCode();
-BufferedReader in = new BufferedReader(
-    new InputStreamReader(con.getInputStream()));
-String inputLine;
-StringBuffer response = new StringBuffer();
-while ((inputLine = in.readLine()) != null) {
-    response.append(inputLine);
-}
-in.close();
-System.out.println(response.toString());
-
-```
-
-```go
-package main
-
-import (
-       "bytes"
-       "net/http"
-)
-
-func main() {
-
-    headers := map[string][]string{
-        "Content-Type": []string{"application/json"},
-        "Accept": []string{"*/*"},
-        
-    }
-
-    data := bytes.NewBuffer([]byte{jsonReq})
-    req, err := http.NewRequest("POST", "///child", data)
-    req.Header = headers
-
-    client := &http.Client{}
-    resp, err := client.Do(req)
-    // ...
-}
-
-```
-
-`POST /child`
-
-*Creates a new Child*
-
-> Body parameter
-
-```json
-{
-  "id": 1234567,
-  "firstName": "Sofia",
-  "lastName": "Smith",
-  "birthDate": "2009-01-23T00:00:00.000Z",
-  "family": {
-    "id": 12345,
-    "name": "Smith"
-  },
-  "gender": "FEMALE"
-}
-```
-
-<h3 id="createChild-parameters">Parameters</h3>
-
-|Parameter|In|Type|Required|Description|
-|---|---|---|---|---|
-|body|body|[Child](#schemachild)|true|The Child to be created.|
-
-> Example responses
-
-<h3 id="createChild-responses">Responses</h3>
-
-|Status|Meaning|Description|Schema|
-|---|---|---|---|
-|201|[Created](https://tools.ietf.org/html/rfc7231#section-6.3.2)|The created Child|[Child](#schemachild)|
-
-<aside class="warning">
-To perform this operation, you must be authenticated by means of one of the following methods:
-None, None ( Scopes: read write )
-</aside>
-
-## GetChildById
-
-<a id="opIdGetChildById"></a>
-
-> Code samples
-
-```shell
-# You can also use wget
-curl -X GET ///child/{childId} \
-  -H 'Accept: */*'
-
-```
-
-```http
-GET ///child/{childId} HTTP/1.1
-Host: null
-
-Accept: */*
-
-```
-
-```javascript
-var headers = {
-  'Accept':'*/*'
-
-};
-
-$.ajax({
-  url: '///child/{childId}',
-  method: 'get',
-
-  headers: headers,
-  success: function(data) {
-    console.log(JSON.stringify(data));
-  }
-})
-
-```
-
-```javascript--nodejs
-const request = require('node-fetch');
-
-const headers = {
-  'Accept':'*/*'
-
-};
-
-fetch('///child/{childId}',
-{
-  method: 'GET',
-
-  headers: headers
-})
-.then(function(res) {
-    return res.json();
-}).then(function(body) {
-    console.log(body);
-});
-
-```
-
-```ruby
-require 'rest-client'
-require 'json'
-
-headers = {
-  'Accept' => '*/*'
-}
-
-result = RestClient.get '///child/{childId}',
-  params: {
-  }, headers: headers
-
-p JSON.parse(result)
-
-```
-
-```python
-import requests
-headers = {
-  'Accept': '*/*'
-}
-
-r = requests.get('///child/{childId}', params={
-
-}, headers = headers)
-
-print r.json()
-
-```
-
-```java
-URL obj = new URL("///child/{childId}");
-HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-con.setRequestMethod("GET");
-int responseCode = con.getResponseCode();
-BufferedReader in = new BufferedReader(
-    new InputStreamReader(con.getInputStream()));
-String inputLine;
-StringBuffer response = new StringBuffer();
-while ((inputLine = in.readLine()) != null) {
-    response.append(inputLine);
-}
-in.close();
-System.out.println(response.toString());
-
-```
-
-```go
-package main
-
-import (
-       "bytes"
-       "net/http"
-)
-
-func main() {
-
-    headers := map[string][]string{
-        "Accept": []string{"*/*"},
-        
-    }
-
-    data := bytes.NewBuffer([]byte{jsonReq})
-    req, err := http.NewRequest("GET", "///child/{childId}", data)
-    req.Header = headers
-
-    client := &http.Client{}
-    resp, err := client.Do(req)
-    // ...
-}
-
-```
-
-`GET /child/{childId}`
-
-*Get a child via identifier*
-
-<h3 id="GetChildById-parameters">Parameters</h3>
-
-|Parameter|In|Type|Required|Description|
-|---|---|---|---|---|
-|childId|path|integer(int64)|true|The identifier of the child to retrieve.|
-
-> Example responses
-
-<h3 id="GetChildById-responses">Responses</h3>
-
-|Status|Meaning|Description|Schema|
-|---|---|---|---|
-|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Returns the child|[Child](#schemachild)|
-
-<aside class="warning">
-To perform this operation, you must be authenticated by means of one of the following methods:
-None, None ( Scopes: read write )
-</aside>
-
-## updateChild
-
-<a id="opIdupdateChild"></a>
-
-> Code samples
-
-```shell
-# You can also use wget
-curl -X PUT ///child/{childId} \
-  -H 'Content-Type: application/json' \
-  -H 'Accept: */*'
-
-```
-
-```http
-PUT ///child/{childId} HTTP/1.1
-Host: null
-Content-Type: application/json
-Accept: */*
-
-```
-
-```javascript
-var headers = {
-  'Content-Type':'application/json',
-  'Accept':'*/*'
-
-};
-
-$.ajax({
-  url: '///child/{childId}',
-  method: 'put',
-
-  headers: headers,
-  success: function(data) {
-    console.log(JSON.stringify(data));
-  }
-})
-
-```
-
-```javascript--nodejs
-const request = require('node-fetch');
-const inputBody = '{
-  "id": 1234567,
-  "firstName": "Sofia",
-  "lastName": "Smith",
-  "birthDate": "2009-01-23T00:00:00.000Z",
-  "family": {
-    "id": 12345,
-    "name": "Smith"
-  },
-  "gender": "FEMALE"
-}';
-const headers = {
-  'Content-Type':'application/json',
-  'Accept':'*/*'
-
-};
-
-fetch('///child/{childId}',
-{
-  method: 'PUT',
-  body: inputBody,
-  headers: headers
-})
-.then(function(res) {
-    return res.json();
-}).then(function(body) {
-    console.log(body);
-});
-
-```
-
-```ruby
-require 'rest-client'
-require 'json'
-
-headers = {
-  'Content-Type' => 'application/json',
-  'Accept' => '*/*'
-}
-
-result = RestClient.put '///child/{childId}',
-  params: {
-  }, headers: headers
-
-p JSON.parse(result)
-
-```
-
-```python
-import requests
-headers = {
-  'Content-Type': 'application/json',
-  'Accept': '*/*'
-}
-
-r = requests.put('///child/{childId}', params={
-
-}, headers = headers)
-
-print r.json()
-
-```
-
-```java
-URL obj = new URL("///child/{childId}");
-HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-con.setRequestMethod("PUT");
-int responseCode = con.getResponseCode();
-BufferedReader in = new BufferedReader(
-    new InputStreamReader(con.getInputStream()));
-String inputLine;
-StringBuffer response = new StringBuffer();
-while ((inputLine = in.readLine()) != null) {
-    response.append(inputLine);
-}
-in.close();
-System.out.println(response.toString());
-
-```
-
-```go
-package main
-
-import (
-       "bytes"
-       "net/http"
-)
-
-func main() {
-
-    headers := map[string][]string{
-        "Content-Type": []string{"application/json"},
-        "Accept": []string{"*/*"},
-        
-    }
-
-    data := bytes.NewBuffer([]byte{jsonReq})
-    req, err := http.NewRequest("PUT", "///child/{childId}", data)
-    req.Header = headers
-
-    client := &http.Client{}
-    resp, err := client.Do(req)
-    // ...
-}
-
-```
-
-`PUT /child/{childId}`
-
-*Update a child via identifier*
-
-> Body parameter
-
-```json
-{
-  "id": 1234567,
-  "firstName": "Sofia",
-  "lastName": "Smith",
-  "birthDate": "2009-01-23T00:00:00.000Z",
-  "family": {
-    "id": 12345,
-    "name": "Smith"
-  },
-  "gender": "FEMALE"
-}
-```
-
-<h3 id="updateChild-parameters">Parameters</h3>
-
-|Parameter|In|Type|Required|Description|
-|---|---|---|---|---|
-|childId|path|integer(int64)|true|Unique identifier for the child.|
-|body|body|[Child](#schemachild)|true|The Child to be updated.|
-
-> Example responses
-
-<h3 id="updateChild-responses">Responses</h3>
-
-|Status|Meaning|Description|Schema|
-|---|---|---|---|
-|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Returns the child|[Child](#schemachild)|
-
-<aside class="warning">
-To perform this operation, you must be authenticated by means of one of the following methods:
-None, None ( Scopes: read write )
-</aside>
-
-<h1 id="Saferize-API-Parent">Parent</h1>
-
-The parent object administrates approval objects and child objects. You can create, retrieve and update a parent. You may also invite other parents, join them to the family and have them co-administrate approvals.
-
-## post__parent
-
-> Code samples
-
-```shell
-# You can also use wget
-curl -X POST ///parent \
-  -H 'Content-Type: application/json' \
-  -H 'Accept: */*'
-
-```
-
-```http
-POST ///parent HTTP/1.1
-Host: null
-Content-Type: application/json
-Accept: */*
-
-```
-
-```javascript
-var headers = {
-  'Content-Type':'application/json',
-  'Accept':'*/*'
-
-};
-
-$.ajax({
-  url: '///parent',
-  method: 'post',
-
-  headers: headers,
-  success: function(data) {
-    console.log(JSON.stringify(data));
-  }
-})
-
-```
-
-```javascript--nodejs
-const request = require('node-fetch');
-const inputBody = '{
-  "id": 123456,
-  "firstName": "John",
-  "lastName": "Smith",
-  "mobilePhone": 41512345678,
-  "family": {
-    "id": 12345,
-    "name": "Smith"
-  },
-  "email": "parent@example.com"
-}';
-const headers = {
-  'Content-Type':'application/json',
-  'Accept':'*/*'
-
-};
-
-fetch('///parent',
-{
-  method: 'POST',
-  body: inputBody,
-  headers: headers
-})
-.then(function(res) {
-    return res.json();
-}).then(function(body) {
-    console.log(body);
-});
-
-```
-
-```ruby
-require 'rest-client'
-require 'json'
-
-headers = {
-  'Content-Type' => 'application/json',
-  'Accept' => '*/*'
-}
-
-result = RestClient.post '///parent',
-  params: {
-  }, headers: headers
-
-p JSON.parse(result)
-
-```
-
-```python
-import requests
-headers = {
-  'Content-Type': 'application/json',
-  'Accept': '*/*'
-}
-
-r = requests.post('///parent', params={
-
-}, headers = headers)
-
-print r.json()
-
-```
-
-```java
-URL obj = new URL("///parent");
-HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-con.setRequestMethod("POST");
-int responseCode = con.getResponseCode();
-BufferedReader in = new BufferedReader(
-    new InputStreamReader(con.getInputStream()));
-String inputLine;
-StringBuffer response = new StringBuffer();
-while ((inputLine = in.readLine()) != null) {
-    response.append(inputLine);
-}
-in.close();
-System.out.println(response.toString());
-
-```
-
-```go
-package main
-
-import (
-       "bytes"
-       "net/http"
-)
-
-func main() {
-
-    headers := map[string][]string{
-        "Content-Type": []string{"application/json"},
-        "Accept": []string{"*/*"},
-        
-    }
-
-    data := bytes.NewBuffer([]byte{jsonReq})
-    req, err := http.NewRequest("POST", "///parent", data)
-    req.Header = headers
-
-    client := &http.Client{}
-    resp, err := client.Do(req)
-    // ...
-}
-
-```
-
-`POST /parent`
-
-*Creates a new Parent*
-
-> Body parameter
-
-```json
-{
-  "id": 123456,
-  "firstName": "John",
-  "lastName": "Smith",
-  "mobilePhone": 41512345678,
-  "family": {
-    "id": 12345,
-    "name": "Smith"
-  },
-  "email": "parent@example.com"
-}
-```
-
-<h3 id="post__parent-parameters">Parameters</h3>
-
-|Parameter|In|Type|Required|Description|
-|---|---|---|---|---|
-|body|body|[Parent](#schemaparent)|true|The parent to be created.|
-
-> Example responses
-
-<h3 id="post__parent-responses">Responses</h3>
-
-|Status|Meaning|Description|Schema|
-|---|---|---|---|
-|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Returns the new Parent|[Parent](#schemaparent)|
-
-<aside class="warning">
-To perform this operation, you must be authenticated by means of one of the following methods:
-None, None ( Scopes: read write )
-</aside>
-
-## getParentById
-
-<a id="opIdgetParentById"></a>
-
-> Code samples
-
-```shell
-# You can also use wget
-curl -X GET ///parent/{parentId} \
-  -H 'Accept: */*'
-
-```
-
-```http
-GET ///parent/{parentId} HTTP/1.1
-Host: null
-
-Accept: */*
-
-```
-
-```javascript
-var headers = {
-  'Accept':'*/*'
-
-};
-
-$.ajax({
-  url: '///parent/{parentId}',
-  method: 'get',
-
-  headers: headers,
-  success: function(data) {
-    console.log(JSON.stringify(data));
-  }
-})
-
-```
-
-```javascript--nodejs
-const request = require('node-fetch');
-
-const headers = {
-  'Accept':'*/*'
-
-};
-
-fetch('///parent/{parentId}',
-{
-  method: 'GET',
-
-  headers: headers
-})
-.then(function(res) {
-    return res.json();
-}).then(function(body) {
-    console.log(body);
-});
-
-```
-
-```ruby
-require 'rest-client'
-require 'json'
-
-headers = {
-  'Accept' => '*/*'
-}
-
-result = RestClient.get '///parent/{parentId}',
-  params: {
-  }, headers: headers
-
-p JSON.parse(result)
-
-```
-
-```python
-import requests
-headers = {
-  'Accept': '*/*'
-}
-
-r = requests.get('///parent/{parentId}', params={
-
-}, headers = headers)
-
-print r.json()
-
-```
-
-```java
-URL obj = new URL("///parent/{parentId}");
-HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-con.setRequestMethod("GET");
-int responseCode = con.getResponseCode();
-BufferedReader in = new BufferedReader(
-    new InputStreamReader(con.getInputStream()));
-String inputLine;
-StringBuffer response = new StringBuffer();
-while ((inputLine = in.readLine()) != null) {
-    response.append(inputLine);
-}
-in.close();
-System.out.println(response.toString());
-
-```
-
-```go
-package main
-
-import (
-       "bytes"
-       "net/http"
-)
-
-func main() {
-
-    headers := map[string][]string{
-        "Accept": []string{"*/*"},
-        
-    }
-
-    data := bytes.NewBuffer([]byte{jsonReq})
-    req, err := http.NewRequest("GET", "///parent/{parentId}", data)
-    req.Header = headers
-
-    client := &http.Client{}
-    resp, err := client.Do(req)
-    // ...
-}
-
-```
-
-`GET /parent/{parentId}`
-
-*Gets a Parent by Id*
-
-<h3 id="getParentById-parameters">Parameters</h3>
-
-|Parameter|In|Type|Required|Description|
-|---|---|---|---|---|
-|parentId|path|integer(int64)|true|Unique identifier for the parent.|
-
-> Example responses
-
-<h3 id="getParentById-responses">Responses</h3>
-
-|Status|Meaning|Description|Schema|
-|---|---|---|---|
-|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Parent|[Parent](#schemaparent)|
-
-<aside class="warning">
-To perform this operation, you must be authenticated by means of one of the following methods:
-None, None ( Scopes: read write )
-</aside>
-
-## UpdateParent
-
-<a id="opIdUpdateParent"></a>
-
-> Code samples
-
-```shell
-# You can also use wget
-curl -X PUT ///parent/me \
-  -H 'Content-Type: application/json' \
-  -H 'Accept: */*'
-
-```
-
-```http
-PUT ///parent/me HTTP/1.1
-Host: null
-Content-Type: application/json
-Accept: */*
-
-```
-
-```javascript
-var headers = {
-  'Content-Type':'application/json',
-  'Accept':'*/*'
-
-};
-
-$.ajax({
-  url: '///parent/me',
-  method: 'put',
-
-  headers: headers,
-  success: function(data) {
-    console.log(JSON.stringify(data));
-  }
-})
-
-```
-
-```javascript--nodejs
-const request = require('node-fetch');
-const inputBody = '{
-  "id": 123456,
-  "firstName": "John",
-  "lastName": "Smith",
-  "mobilePhone": 41512345678,
-  "family": {
-    "id": 12345,
-    "name": "Smith"
-  },
-  "email": "parent@example.com"
-}';
-const headers = {
-  'Content-Type':'application/json',
-  'Accept':'*/*'
-
-};
-
-fetch('///parent/me',
-{
-  method: 'PUT',
-  body: inputBody,
-  headers: headers
-})
-.then(function(res) {
-    return res.json();
-}).then(function(body) {
-    console.log(body);
-});
-
-```
-
-```ruby
-require 'rest-client'
-require 'json'
-
-headers = {
-  'Content-Type' => 'application/json',
-  'Accept' => '*/*'
-}
-
-result = RestClient.put '///parent/me',
-  params: {
-  }, headers: headers
-
-p JSON.parse(result)
-
-```
-
-```python
-import requests
-headers = {
-  'Content-Type': 'application/json',
-  'Accept': '*/*'
-}
-
-r = requests.put('///parent/me', params={
-
-}, headers = headers)
-
-print r.json()
-
-```
-
-```java
-URL obj = new URL("///parent/me");
-HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-con.setRequestMethod("PUT");
-int responseCode = con.getResponseCode();
-BufferedReader in = new BufferedReader(
-    new InputStreamReader(con.getInputStream()));
-String inputLine;
-StringBuffer response = new StringBuffer();
-while ((inputLine = in.readLine()) != null) {
-    response.append(inputLine);
-}
-in.close();
-System.out.println(response.toString());
-
-```
-
-```go
-package main
-
-import (
-       "bytes"
-       "net/http"
-)
-
-func main() {
-
-    headers := map[string][]string{
-        "Content-Type": []string{"application/json"},
-        "Accept": []string{"*/*"},
-        
-    }
-
-    data := bytes.NewBuffer([]byte{jsonReq})
-    req, err := http.NewRequest("PUT", "///parent/me", data)
-    req.Header = headers
-
-    client := &http.Client{}
-    resp, err := client.Do(req)
-    // ...
-}
-
-```
-
-`PUT /parent/me`
-
-*Change the Parent*
-
-> Body parameter
-
-```json
-{
-  "id": 123456,
-  "firstName": "John",
-  "lastName": "Smith",
-  "mobilePhone": 41512345678,
-  "family": {
-    "id": 12345,
-    "name": "Smith"
-  },
-  "email": "parent@example.com"
-}
-```
-
-<h3 id="UpdateParent-parameters">Parameters</h3>
-
-|Parameter|In|Type|Required|Description|
-|---|---|---|---|---|
-|body|body|[Parent](#schemaparent)|true|The Parent to be updated.|
-
-> Example responses
-
-<h3 id="UpdateParent-responses">Responses</h3>
-
-|Status|Meaning|Description|Schema|
-|---|---|---|---|
-|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Returns the changed Parent|[Parent](#schemaparent)|
-
-<aside class="warning">
-To perform this operation, you must be authenticated by means of one of the following methods:
-None, None ( Scopes: read write )
-</aside>
 
 # Schemas
-
-<h2 id="tocSfamily">Family</h2>
-
-<a id="schemafamily"></a>
-
-```json
-{
-  "id": 12345,
-  "name": "Smith"
-}
-```
-
-### Properties
-
-|Name|Type|Required|Description|
-|---|---|---|---|
-|id|integer(int64)|true|Unique identifier for the family returned by the system.|
-|name|string|true|The family name|
 
 <h2 id="tocSapp">App</h2>
 
@@ -7675,11 +6129,9 @@ None, None ( Scopes: read write )
   "timeRestriction": "ENABLED",
   "status": "PUBLISHED",
   "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+  "shortDescription": "Lorem ipsum dolor sit amet.",
   "urlName": "string",
-  "details": [
-    "SOCIAL_INTERACTION",
-    "IN_APP_PURCHASES"
-  ],
+  "age": 5,
   "email": "developer@example.com"
 }
 ```
@@ -7689,15 +6141,16 @@ None, None ( Scopes: read write )
 |Name|Type|Required|Description|
 |---|---|---|---|
 |id|integer(int64)|true|Unique identifier for the app returned by the system.|
-|name|string|true|The name of the app.|
-|platforms|[string]|false|An array of enums that specify what platforms are supported by this app.|
-|category|string|false|One of the predifned values indicating the category of the app.|
-|timeRestriction|string|false|On/Off flag for enabling/disabling time restrictions on the app.|
-|status|string|false|Current lifecycle status of the app. Please read more on the requirements for publishing the app.|
-|description|string|false|A description of the app.|
-|urlName|string|false|The partial url name of this app on Saferize.|
-|details|[string]|false|Features implemented on the app.|
-|email|string|false|The app developer's email.|
+|name|string|true|Name of the app.|
+|platforms|[string]|false|Array of enums that specify what platforms are supported by this app.|
+|category|string|false|One of the predefined values indicating the category of the app.|
+|timeRestriction|string|false|On/off flag for enabling/disabling time restrictions on the app.|
+|status|string|false|Current lifecycle status of the app. Please read more on the requirements for [publishing the app](#changestatus).|
+|description|string|false|Description of the app. (max. number of characters = 255)|
+|shortDescription|string|false|Short description of the app. (max. number of characters = 100)|
+|urlName|string|false|Partial url name of this app on Saferize.|
+|age|integer(int64)|false|Minimum recommended age of app users.|
+|email|string|false|App developer's email.|
 
 #### Enumerated Values
 
@@ -7715,18 +6168,40 @@ None, None ( Scopes: read write )
 |platforms|XBOX|
 |platforms|NINTENDO|
 |platforms|PLAYSTATION|
+
+|Property|Value|
+|---|---|
 |category|GAME|
 |category|MEDIA|
+
+|Property|Value|
+|---|---|
 |timeRestriction|ENABLED|
 |timeRestriction|DISABLED|
+
+|Property|Value|
+|---|---|
 |status|DRAFT|
 |status|PUBLISHED|
 |status|DELETED|
-|details|SOCIAL_INTERACTION|
-|details|IN_APP_PURCHASES|
-|details|ADVERTISING|
-|details|PAID_APP|
-|details|SUBSCRIPTION|
+
+<h2 id="tocSfamily">Family</h2>
+
+<a id="schemafamily"></a>
+
+```json
+{
+  "id": 12345,
+  "name": "Smith"
+}
+```
+
+### Properties
+
+|Name|Type|Required|Description|
+|---|---|---|---|
+|id|integer(int64)|true|Unique identifier for the family returned by the system.|
+|name|string|true|Family name.|
 
 <h2 id="tocSparent">Parent</h2>
 
@@ -7751,11 +6226,11 @@ None, None ( Scopes: read write )
 |Name|Type|Required|Description|
 |---|---|---|---|
 |id|integer(int64)|true|Unique identifier for the parent returned by the system.|
-|firstName|string|true|First Name|
-|lastName|string|true|Last Name|
-|mobilePhone|string(phone)|false|Mobile Phone. The format should be XXXYYYZZZZ (no dashes or parenthesis)|
-|family|[Family](#schemafamily)|true|No description|
-|email|string(email)|true|No description|
+|firstName|string|true|Parent's first name.|
+|lastName|string|true|Parent's last name|
+|mobilePhone|string(phone)|false|Parent's phone number. The format should be XXXYYYZZZZ (no dashes or parentheses).|
+|family|[Family](#schemafamily)|true|Parent's family.|
+|email|string(email)|true|Parent's email address.|
 
 <h2 id="tocSchild">Child</h2>
 
@@ -7780,11 +6255,11 @@ None, None ( Scopes: read write )
 |Name|Type|Required|Description|
 |---|---|---|---|
 |id|integer(int64)|true|Unique identifier for the child returned by the system.|
-|firstName|string|true|Child's first name|
-|lastName|string|false|Child's last Name|
-|birthDate|string(date)|true|The childs date of birth|
-|family|[Family](#schemafamily)|true|No description|
-|gender|string|true|The child's gender|
+|firstName|string|true|Child's first name.|
+|lastName|string|false|Child's last name.|
+|birthDate|string(date)|true|Child's date of birth.|
+|family|[Family](#schemafamily)|true|Child's family.|
+|gender|string|true|Child's gender.|
 
 #### Enumerated Values
 
@@ -7818,7 +6293,7 @@ None, None ( Scopes: read write )
 |firstName|string|true|Developer's first name.|
 |lastName|string|true|Developer's last name.|
 |email|string|true|Developer's primary email address.|
-|mobilePhone|string|true|Developer's primary mobile phone number.|
+|mobilePhone|string|true|Developer's primary mobile phone number. The format should be XXXYYYZZZZ (no dashes or parentheses).|
 |company|string|false|Developer's company name.|
 |country|string|false|The country in which the developer resides, or in which the company is legally established. This should be an ISO 3166-1 alpha-2 country code. For example, if you are in the United States and the business for which you're creating an account is legally represented in Canada, you would use `CA` as the country for the account being created.|
 
@@ -7841,11 +6316,9 @@ None, None ( Scopes: read write )
     "timeRestriction": "ENABLED",
     "status": "PUBLISHED",
     "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    "shortDescription": "Lorem ipsum dolor sit amet.",
     "urlName": "string",
-    "details": [
-      "SOCIAL_INTERACTION",
-      "IN_APP_PURCHASES"
-    ],
+    "age": 5,
     "email": "developer@example.com"
   },
   "child": {
@@ -7870,11 +6343,11 @@ None, None ( Scopes: read write )
 
 |Name|Type|Required|Description|
 |---|---|---|---|
-|id|integer(int64)|true|The AppUser Id returned by the system|
-|token|string|true|A client token for the app. This is defined by the app and should be unique per user of the app.|
-|app|[App](#schemaapp)|true|No description|
-|child|[Child](#schemachild)|true|No description|
-|family|[Family](#schemafamily)|true|No description|
+|id|integer(int64)|true|Unique identifier for the app user returned by the system.|
+|token|string|true|App user's token (username on the app). This is defined by the app and should be user-unique.|
+|app|[App](#schemaapp)|true|App that this app user is registered on.|
+|child|[Child](#schemachild)|true|Child that represent this app user.|
+|family|[Family](#schemafamily)|true|The family of the child on this app user.|
 
 <h2 id="tocSapproval">Approval</h2>
 
@@ -7897,11 +6370,9 @@ None, None ( Scopes: read write )
       "timeRestriction": "ENABLED",
       "status": "PUBLISHED",
       "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+      "shortDescription": "Lorem ipsum dolor sit amet.",
       "urlName": "string",
-      "details": [
-        "SOCIAL_INTERACTION",
-        "IN_APP_PURCHASES"
-      ],
+      "age": 5,
       "email": "developer@example.com"
     },
     "child": {
@@ -7939,7 +6410,8 @@ None, None ( Scopes: read write )
   "createdTime": "2017-11-09T14:23:00.000Z",
   "status": "APPROVED",
   "parentEmail": "parent@myfamily.com",
-  "parentMobilePhone": 4151234567
+  "parentMobilePhone": 4151234567,
+  "currentState": "ACTIVE"
 }
 ```
 
@@ -7947,15 +6419,16 @@ None, None ( Scopes: read write )
 
 |Name|Type|Required|Description|
 |---|---|---|---|
-|id|integer(int64)|true|The Approval Id returned by the system|
-|appUser|[AppUser](#schemaappuser)|true|No description|
-|approvalParent|[Parent](#schemaparent)|false|No description|
-|family|[Family](#schemafamily)|true|No description|
-|statusTime|string(date-time)|true|The time and date of the last status change|
-|createdTime|string(date-time)|true|The time and date when this approval was created|
-|status|string|true|The approval status|
-|parentEmail|string|false|The email of the parent who received this request|
-|parentMobilePhone|string|false|The phone number of the parent who received this request|
+|id|integer(int64)|true|Unique identifier for the approval returned by the system.|
+|appUser|[AppUser](#schemaappuser)|true|App user on this approval.|
+|approvalParent|[Parent](#schemaparent)|false|Parent managing this approval.|
+|family|[Family](#schemafamily)|true|Family with which this approval is associated with.|
+|statusTime|string(date-time)|true|Time and date of the last status change. The date-time notation as defined by [RFC 3339](https://tools.ietf.org/html/rfc3339).|
+|createdTime|string(date-time)|true|Time and date when this approval was created. The date-time notation as defined by [RFC 3339](https://tools.ietf.org/html/rfc3339).|
+|status|string|true|The approval status.|
+|parentEmail|string|false|Email of the parent who received this request.|
+|parentMobilePhone|string|false|Phone number of the parent who received this request. The format should be XXXYYYZZZZ (no dashes or parentheses).|
+|currentState|string|false|Current state of the approval.|
 
 #### Enumerated Values
 
@@ -7965,6 +6438,11 @@ None, None ( Scopes: read write )
 |status|NOTIFIED|
 |status|APPROVED|
 |status|REJECTED|
+
+|Property|Value|
+|---|---|
+|currentState|ACTIVE|
+|currentState|PAUSED|
 
 <h2 id="tocSappconfig">AppConfig</h2>
 
@@ -7986,7 +6464,130 @@ None, None ( Scopes: read write )
 |webhookUrl|string|false|Valid HTTPS endpoint for receiving webhooks.|
 |autoPauseSessionsInterval|integer(int64)|false|Undefined.|
 |autoRejectWaitTime|integer(int64)|false|Time in seconds after which an unattended approval will be automatically rejected.|
-|validatorName|[Validator](#schemavalidator)|false|No description|
+|validatorName|[Validator](#schemavalidator)|false|Validator defines a specific way that the developer has chosen for the app to confirm parent-child relationship.|
+
+<h2 id="tocSsession">Session</h2>
+
+<a id="schemasession"></a>
+
+```json
+{
+  "duration": 3600,
+  "subject": {
+    "id": 1234,
+    "firstName": "Jane",
+    "lastName": "Doe",
+    "email": "jane.doe@example.com",
+    "mobilePhone": "415-123-4567",
+    "company": "Saferize",
+    "country": "CA"
+  },
+  "origin": "127.0.0.1",
+  "signatureCode": "8479dd81-4a33-4806-902f-52cbbe93c240",
+  "startedAt": "2017-07-21T17:32:28Z",
+  "state": "ACTIVE",
+  "uuid": "ce11cccc-1bdb-430f-8b9f-ee02079e4fe5",
+  "token": "VjF8MTA5ODh8Y29tLnNhZmVyaXplLmNvcmUuZW50aXRpZXMucGFyZW50LlBhcmVudHwxNTI1MjkyNjU2MTA4fGNlMTFjY2NjLTFiZGItNDMwZi04YjlmLWVlMDIwNzllNGZlNQ=="
+}
+```
+
+### Properties
+
+|Name|Type|Required|Description|
+|---|---|---|---|
+|duration|integer(int64)|true|Duration of the session before it expires and is no longer valid.|
+|subject|[Developer](#schemadeveloper)|true|Developer on whom the session is created on.|
+|origin|string|false|Origin of the requester that created the session.|
+|signatureCode|string|true|Unique session signature.|
+|startedAt|string(date-time)|true|Timestamp when the session was started. The date-time notation as defined by [RFC 3339](https://tools.ietf.org/html/rfc3339)|
+|state|string|true|The current state of the approval.|
+|uuid|string|true|Unique [UUID](https://en.wikipedia.org/wiki/Universally_unique_identifier) of the session.|
+|token|string|true|Unique token of the session.|
+
+#### Enumerated Values
+
+|Property|Value|
+|---|---|
+|state|ACTIVE,|
+|state|PAUSED|
+
+<h2 id="tocSappusagesession">AppUsageSession</h2>
+
+<a id="schemaappusagesession"></a>
+
+```json
+{
+  "id": 12345678,
+  "approval": {
+    "id": 12,
+    "appUser": {
+      "id": 123,
+      "token": "child_nickname_on_game_1",
+      "app": {
+        "id": 1,
+        "name": "Saferize Example",
+        "platforms": [
+          "ANDROID",
+          "IOS"
+        ],
+        "category": "GAME",
+        "timeRestriction": "ENABLED",
+        "status": "PUBLISHED",
+        "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+        "shortDescription": "Lorem ipsum dolor sit amet.",
+        "urlName": "string",
+        "age": 5,
+        "email": "developer@example.com"
+      },
+      "child": {
+        "id": 1234567,
+        "firstName": "Sofia",
+        "lastName": "Smith",
+        "birthDate": "2009-01-23T00:00:00.000Z",
+        "family": {
+          "id": 12345,
+          "name": "Smith"
+        },
+        "gender": "FEMALE"
+      },
+      "family": {
+        "id": 12345,
+        "name": "Smith"
+      }
+    },
+    "approvalParent": {
+      "id": 123456,
+      "firstName": "John",
+      "lastName": "Smith",
+      "mobilePhone": 41512345678,
+      "family": {
+        "id": 12345,
+        "name": "Smith"
+      },
+      "email": "parent@example.com"
+    },
+    "family": {
+      "id": 12345,
+      "name": "Smith"
+    },
+    "statusTime": "2017-11-09T14:23:00.000Z",
+    "createdTime": "2017-11-09T14:23:00.000Z",
+    "status": "APPROVED",
+    "parentEmail": "parent@myfamily.com",
+    "parentMobilePhone": 4151234567,
+    "currentState": "ACTIVE"
+  },
+  "hostname": "183.241.21.10"
+}
+```
+
+### Properties
+
+|Name|Type|Required|Description|
+|---|---|---|---|
+|id|integer(int64)|false|Unique identifier for the app usage session returned by the system.|
+|approval|[Approval](#schemaapproval)|false|Approval associated with this app usage session.|
+|hostname|string|false|IP address where the request to create an app usage session originated from.|
 
 <h2 id="tocSappfeature">AppFeature</h2>
 
@@ -7996,7 +6597,7 @@ None, None ( Scopes: read write )
 {
   "id": 12345678,
   "appId": 12,
-  "name": "CHAT",
+  "name": "DATA_COLLECTION",
   "implemented": true,
   "parentPrivilege": true
 }
@@ -8008,24 +6609,9 @@ None, None ( Scopes: read write )
 |---|---|---|---|
 |id|integer(int64)|false|Unique identifier for the app feature returned by the system.|
 |appId|integer(int64)|false|Unique identifier for the app that this app feature is associated with.|
-|name|string|false|The app feature's name, meant to be displayable to the customer.|
+|name|[AppFeatureName](#schemaappfeaturename)|false|Name of the app feature.|
 |implemented|boolean|false|Boolean flag indicating whether the feature is implemented.|
-|parentPrivilege|boolean|false|Boolean flag indicating whether the parents are allowed to turn off/on the feature.|
-
-#### Enumerated Values
-
-|Property|Value|
-|---|---|
-|name|ADVERTISING,|
-|name|CHAT,|
-|name|COMMENTS,|
-|name|DATA_COLLECTION,|
-|name|IN_APP_PURCHASES,|
-|name|LOCATION_SHARING,|
-|name|PAID_APP,|
-|name|PUSH_NOTIFICATIONS,|
-|name|SOCIAL_INTERACTION,|
-|name|SUBSCRIPTION|
+|parentPrivilege|boolean|false|Boolean flag indicating whether the parents are allowed to turn on/off the feature.|
 
 <h2 id="tocSsubscriptionplan">SubscriptionPlan</h2>
 
@@ -8037,7 +6623,7 @@ None, None ( Scopes: read write )
   "name": "Platinum starter",
   "billingCycle": "YEARLY",
   "active": true,
-  "price": 299
+  "price": 2.99
 }
 ```
 
@@ -8046,10 +6632,10 @@ None, None ( Scopes: read write )
 |Name|Type|Required|Description|
 |---|---|---|---|
 |id|integer(int64)|false|Unique identifier for the subscription plan returned by the system.|
-|name|string|false|The plans’s name, meant to be displayable to the customer.|
+|name|string|false|The plans name, displayable to the customer.|
 |billingCycle|string|false|Specifies billing frequency.|
 |active|boolean|false|Boolean flag representing whether the plan is active.|
-|price|number(float)|false|The cost of the item as a positive float in the smallest currency unit (i.e. $2.99 will be represented as 299 cents).|
+|price|number(float)|false|The cost of the item as a positive float.|
 
 #### Enumerated Values
 
@@ -8080,8 +6666,8 @@ None, None ( Scopes: read write )
 |id|integer(int64)|false|Unique identifier for the image returned by the system.|
 |url|string|false|A read-only URL where the uploaded file can be accessed.|
 |createdTime|string|false|Time at which the object was created. Measured in seconds since the Unix epoch.|
-|width|integer(int64)|false|The witdh in pixels of the image object.|
-|height|integer(int64)|false|The witdh in pixels of the image object.|
+|width|integer(int64)|false|The width in pixels of the image object.|
+|height|integer(int64)|false|The height in pixels of the image object.|
 
 <h2 id="tocSvalidator">Validator</h2>
 
@@ -8095,14 +6681,43 @@ None, None ( Scopes: read write )
 
 |Name|Type|Required|Description|
 |---|---|---|---|
-|*anonymous*|string|false|No description|
+|name|string|false|Validator defines a specific way that the developer has chosen for the app to confirm parent-child relationship.|
 
 #### Enumerated Values
 
 |Property|Value|
 |---|---|
-|*anonymous*|Microtransaction|
-|*anonymous*|SMS|
+|name|Microtransaction|
+|name|SMS|
+
+<h2 id="tocSappfeaturename">AppFeatureName</h2>
+
+<a id="schemaappfeaturename"></a>
+
+```json
+"DATA_COLLECTION"
+```
+
+### Properties
+
+|Name|Type|Required|Description|
+|---|---|---|---|
+|name|string|false|App feature name.|
+
+#### Enumerated Values
+
+|Property|Value|
+|---|---|
+|name|ADVERTISING|
+|name|CHAT|
+|name|COMMENTS|
+|name|DATA_COLLECTION|
+|name|IN_APP_PURCHASES|
+|name|LOCATION_SHARING|
+|name|PAID_APP|
+|name|PUSH_NOTIFICATIONS|
+|name|SOCIAL_INTERACTION|
+|name|SUBSCRIPTION|
 
 <h2 id="tocSjsonpatch">JsonPatch</h2>
 
@@ -8112,7 +6727,7 @@ None, None ( Scopes: read write )
 {
   "op": "replace",
   "path": "/status",
-  "value": {}
+  "value": "PUBLISHED"
 }
 ```
 
@@ -8120,9 +6735,9 @@ None, None ( Scopes: read write )
 
 |Name|Type|Required|Description|
 |---|---|---|---|
-|op|string|false|Sort order:  * add - Ascending, from A to Z.  * replace - Descending, from Z to A.|
-|path|string|false|the field to be updated using JsonPath syntax|
-|value|object|false|No description|
+|op|string|false|Predifined JsonPatch operation.|
+|path|string|false|The path to be updated using JsonPatch syntax.|
+|value|string|false|New resource value.|
 
 #### Enumerated Values
 
@@ -8139,7 +6754,7 @@ None, None ( Scopes: read write )
 ```json
 {
   "message": "There is already an app with those attributes.",
-  "type": "com.saferize.core.shared.DuplicateEntityException"
+  "type": "DuplicateEntityException"
 }
 ```
 
@@ -8147,6 +6762,6 @@ None, None ( Scopes: read write )
 
 |Name|Type|Required|Description|
 |---|---|---|---|
-|message|any|false|A human-readable message providing more details about the error.|
-|type|string|true|No description|
+|message|string|false|A human-readable message providing more details about the error.|
+|type|string|true|Error type.|
 

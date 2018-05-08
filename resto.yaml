@@ -1,0 +1,232 @@
+ /approval/{id}
+    patch:
+        tags:
+            - Approval
+        operationId: changeApproval
+        summary: Update an approval
+        parameters:
+            - name: id
+            in: path
+            description: The approval Id to get
+            required: true
+            schema:
+                type: integer
+                format: int64
+        responses:
+            '200':
+            description: Return the changed approval
+            content:
+                application/json:
+                schema:
+                    $ref: '#/components/schemas/Approval'
+        requestBody:
+            content:
+            application/json:
+                schema:
+                $ref: '#/components/schemas/JsonPatch'
+                example:
+                    op: replace
+                    path: /status
+                    value: APPROVED
+            description: >-
+            A JsonPatch array with the fields to be changed. Current supported
+            fields are ~ status, child, features
+            required: true
+
+             /family:
+    post:
+      tags:
+        - Family
+      summary: Create a family
+      description: >-
+        The family object is created when a child becomes an app user by parent
+        consent. The family members are associated with this object.
+      operationId: createFamily
+      responses:
+        '201':
+          description: Return the new Family
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Family'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Family'
+        description: The new Family to be created
+        required: true
+  /family/me:
+    get:
+      tags:
+        - Family
+      operationId: getFamily
+      summary: Retrieve your family
+      responses:
+        '200':
+          description: Return the Family
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Family'
+    put:
+      tags:
+        - Family
+      operationId: updateFamily
+      summary: Update your family
+      responses:
+        '200':
+          description: The changed Family
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Family'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Family'
+        description: The changed family.
+        required: true
+  /child:
+    get:
+      tags:
+        - Child
+      operationId: getChildren
+      summary: Get all children members of the family
+      responses:
+        '200':
+          description: Returns an array of Child
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Child'
+    post:
+      tags:
+        - Child
+      operationId: createChild
+      summary: Creates a new Child
+      responses:
+        '201':
+          description: The created Child
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Child'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Child'
+        description: The Child to be created.
+        required: true
+  '/child/{childId}':
+    get:
+      tags:
+        - Child
+      summary: Get a child via identifier
+      operationId: GetChildById
+      parameters:
+        - name: childId
+          in: path
+          required: true
+          description: The identifier of the child to retrieve.
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Returns the child
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Child'
+    put:
+      tags:
+        - Child
+      summary: Update a child via identifier
+      operationId: updateChild
+      parameters:
+        - name: childId
+          in: path
+          required: true
+          description: Unique identifier for the child.
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Returns the child
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Child'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Child'
+        description: The Child to be updated.
+        required: true
+  /parent:
+    post:
+      tags:
+        - Parent
+      summary: Creates a new Parent
+      responses:
+        '200':
+          description: Returns the new Parent
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Parent'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Parent'
+        description: The parent to be created.
+        required: true
+  '/parent/{parentId}':
+    get:
+      tags:
+        - Parent
+      summary: Gets a Parent by Id
+      operationId: getParentById
+      parameters:
+        - name: parentId
+          in: path
+          required: true
+          description: Unique identifier for the parent.
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Parent
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Parent'
+  /parent/me:
+    put:
+      tags:
+        - Parent
+      summary: Change the Parent
+      operationId: UpdateParent
+      responses:
+        '200':
+          description: Returns the changed Parent
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Parent'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Parent'
+        description: The Parent to be updated.
+        required: true

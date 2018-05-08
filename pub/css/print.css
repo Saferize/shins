@@ -488,6 +488,7 @@ under the License.
     border-radius: 5px;
     margin-top: 1.5em;
     margin-bottom: 1.5em;
+    /*margin-left: 28px;*/
     line-height: 1.6; }
   .content aside:before {
     vertical-align: middle;

@@ -467,7 +467,10 @@ html, body {
       padding-bottom: 0.5em; }
   .toc-wrapper .logo {
     display: block;
-    max-width: 100%;
+    max-width: 92%;
+    margin-top: 8px;
+    margin-left: 8px;
+    margin-right: 8px;
     margin-bottom: 0px; }
   .toc-wrapper > .search {
     position: relative; }
@@ -720,6 +723,7 @@ html, body {
     padding-bottom: 1em;
     margin-top: 1.5em;
     margin-bottom: 1.5em;
+    margin-left: 28px;
     background: #8fbcd4;
     line-height: 1.6; }
     .content aside.warning {

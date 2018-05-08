@@ -1,5 +1,6 @@
 openapi: 3.0.0
-servers: []
+servers:
+  - url: http://api.saferize.com
 info:
   description: >
     The Saferize API is organized around
@@ -14,39 +15,43 @@ info:
 
 
     To make the API as explorable as possible, accounts have test mode and live
-    mode API keys. There is No "switch" for changing between modes, just use the
+    mode API keys. There is no "switch" for changing between modes, just use the
     appropriate key to perform a live or test transaction.
 
 
-    Be sure to subscribe to Saferize's API announce mailing list to receive
-    information on new additions and changes to Saferize's API.
+    Be sure to subscribe to Saferize's API announcements mailing list to receive
+    information on new additions and changes.
 
 
     The requests in the right sidebar are designed to work as is.
+
+    
+    `NOTE` - We HIGHLY suggest using Saferize's [Developer Console Tool](https://console.saferize.com) as opposed to making raw calls.
   title: Saferize API
   version: v1
   termsOfService: 'https://saferize.com/terms-of-service/'
   contact:
-    email: dev@saferize.com
+    name: Saferize Customer Support
+    email: devs@saferize.com
 tags:
   - name: Developer
     description: >-
-      The `Developer` object represents the publisher. You can create, retrieve
+      The [Developer](#tocSdeveloper) object represents the publisher. You can create, retrieve
       and update a developer. You may also view all the apps associated with the
       developer.
   - name: App
     description: >-
-      This is an object representing an App that implements Saferize. You can
-      retreive it to see it's many properties state, configuration, platforms
-      etc.
+      This is an object representing an [App](#tocSapp) that implements Saferize. You can
+      retrieve it to see it's many properties and [configuration](#tocSappconfig).
   - name: Approval
     description: >-
+      The [Approval](#tocSapproval) object is the intersection of parent-child-app relationship and as such the most important object on our platform. A child exists as a user on the approval which is managed by the parent. On the other side of this interaction is the app which complies with the conditions contained in the approval.
+
+
       An approval is created each time a child creates an account on the app.
       When this happens, the parent is given an opportunity to respond to the
-      request by either approving or rejecting the app and validating
-      relationship. Moreover, changes on the approval object by the parent
-      reflect child's interaction with the app. The approval object is the
-      intersection of Saferize (reword).
+      request by either approving or rejecting the app and validating the parent-child
+      relationship. Moreover, parental changes on the approval object will reflect on how the child interacts with the app
   - name: Family
     description: >-
       Family methods provide access to information and operations relating to
@@ -65,7 +70,13 @@ tags:
       create, retrieve and update a child. You may also view all the approvals
       associated with the child.
   - name: Session
-    description: Saferize Session
+    description: >-
+      A session is established at the point of the authentication, and will last for an hour.
+      To perform majority of the operations on our platform, whether it be reading or writing, you must be authenticated.
+
+
+      Each subsuquent call will extend the session by an extra hour. If the communication is idle for an hour, the session will expire,
+      and will need to be established again.
   - name: Events
     description: >
       Use webhooks to be notified about events that happen on the Saferize
@@ -79,18 +90,15 @@ tags:
         * UsageTimerPausedEvent
         * UsageTimerUnPausedEvent
 security:
-  - ApiKeyAuth: []
-  - OAuth2:
-      - read
-      - write
+  - BearerAuth: []
           
 paths:
   /developer:
     post:
       tags:
         - Developer
-      summary: Create a developer
-      description: The developer object is created when a new developer registers.
+      summary: Create a Developer
+      description: The `Developer` object is created when a new developer registers.
       operationId: createDeveloper
       responses:
         '201':
@@ -109,14 +117,53 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Developer'
+              type: object
+              required:
+                - id
+                - firstName
+                - lastName
+                - email
+                - mobilePhone
+              properties:
+                firstName:
+                  type: string
+                  description: Developer's first name.
+                  example: Jane
+                lastName:
+                  type: string
+                  description: Developer's last name.
+                  example: Doe
+                email:
+                  description: Developer's primary email address.
+                  type: string
+                  example: jane.doe@example.com
+                mobilePhone:
+                  description: 
+                    Developer's primary mobile phone number. The format should be XXXYYYZZZZ (no dashes or
+                    parentheses).
+                  type: string
+                  example: 415-123-4567
+                company:
+                  description: Developer's company name.
+                  type: string
+                  example: Saferize
+                country:
+                  description: >-
+                    The country in which the developer resides, or in which the company
+                    is legally established. This should be an ISO 3166-1 alpha-2 country
+                    code. For example, if you are in the United States and the business
+                    for which you're creating an account is legally represented in
+                    Canada, you would use `CA` as the country for the account being
+                    created.
+                  type: string
+                  example: CA
         description: The new developer to be created
         required: true
   /developer/me:
     get:
       tags:
         - Developer
-      summary: Retreieve the developer
+      summary: Retrieve the Developer
       description: Retrieves the developer object associated with the current session.
       operationId: getDeveloper
       responses:
@@ -151,49 +198,58 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Developer'
-            example:
-              firstName: Dan
-
-            # schema:
-            #   type: object
-            #   properties:
-            #     id: 
-            #       type: integer
-            #       example: 1234
-            #     firstName: 
-            #       type: string
-            #       example: Jane
-            #     lastName: 
-            #       type: string
-            #       example: Doe
-            #     mobilePhone:
-            #       type: string
-            #       example: 415-123-4567
-            #     company:
-            #       type: string
-            #       example: Saferize
-            #     country:
-            #       type: string
-            #       example: CA              
-        description: The developer to be updated to.
+              type: object
+              required:
+                - id
+                - firstName
+                - lastName
+                - email
+                - mobilePhone
+              properties:
+                firstName:
+                  type: string
+                  description: Developer's first name.
+                  example: Jane
+                lastName:
+                  type: string
+                  description: Developer's last name.
+                  example: Doe
+                mobilePhone:
+                  description: >-
+                    Developer's primary mobile phone number. The format should be XXXYYYZZZZ (no dashes or
+                    parentheses).
+                  type: string
+                  example: 415-123-4567
+                company:
+                  description: Developer's company name.
+                  type: string
+                  example: Saferize
+                country:
+                  description: >-
+                    The country in which the developer resides, or in which the company
+                    is legally established. This should be an ISO 3166-1 alpha-2 country
+                    code. For example, if you are in the United States and the business
+                    for which you're creating an account is legally represented in
+                    Canada, you would use `CA` as the country for the account being
+                    created.
+                  type: string
+                  example: CA    
+        description: The developer properties to be updated to.
         required: true
   /developer/me/apps:
     get:
       tags:
         - Developer
-      summary: Retreieve developer's apps
+      summary: Retrieve Developer's apps
       description: Retrieves the apps associated with the developer.
       operationId: getApps
       responses:
         '200':
           description: An array of apps
           content:
-            '*/*':
+            application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/App'
+                $ref: '#/components/schemas/Apps'
         '401':
           $ref: '#/components/responses/Unauthorized'
   /app:
@@ -201,7 +257,12 @@ paths:
       tags:
         - App
       operationId: createApp
-      summary: Create an app
+      summary: Create an App
+      description: >
+        With a developer account you can create apps. 
+      
+
+        Although all `App` object properties must be filled out in order to [publish](#changestatus) it, we don't expect you to have it all figured out immediately. As a matter of fact, in order to create an `App` object, the only field you need to specify is the App's `name`.
       responses:
         '201':
           description: The created app.
@@ -218,15 +279,108 @@ paths:
       requestBody:
         content:
           application/json:
-            schema:
-              $ref: '#/components/schemas/App'
+              schema:
+                type: object
+                required:
+                  - id
+                  - name
+                properties:
+                  name:
+                    type: string
+                    description: The name of the app.
+                    example: Saferize Example
+                  platforms:
+                    type: array
+                    description: >-
+                      An array of enums that specify what platforms are supported by this
+                      app.
+                    items:
+                      type: string
+                    enum:
+                      - ANDROID
+                      - IOS
+                      - WINDOWS
+                      - MAC_OS
+                      - LINUX
+                      - APPLE_TV
+                      - ANDROID_TV
+                      - APPLE_WATCH
+                      - ANDROID_WATCH
+                      - XBOX
+                      - NINTENDO
+                      - PLAYSTATION
+                    example:
+                      - ANDROID
+                      - IOS
+                  category:
+                    description: One of the predifned values indicating the category of the app.
+                    type: string
+                    enum:
+                      - GAME
+                      - MEDIA
+                    example: GAME
+                  description:
+                    type: string
+                    description: A description of the app.
+                    example: >-
+                      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+                      eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                  shortDescription:
+                    type: string
+                    description: A short description of the app.
+                    example: >-
+                      Lorem ipsum dolor sit amet.
+                  urlName:
+                    type: string
+                    description: The partial url name of this app on Saferize.
+                  age:
+                    type: integer
+                    format: int64
+                    description: Minimum recommended age of app users.
+                    example: 5
+                  email:
+                    type: string
+                    description: The app developer's email.
+                    example: developer@example.com
         description: The new app to be created.
         required: true
+  '/app/{id}':
+    get:
+      tags:
+        - App
+      operationId: getApp
+      security: []   # No security
+      summary: Retrieve an App
+      description: Retrieves the app object associated with the id.
+      parameters:
+        - name: id
+          in: path
+          description: The identifier of the app to retrieve.
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Returns the app object associated with the id.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/App'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
     put:
       tags:
         - App
       operationId: changeAppAttributes
-      summary: Changes some of the descriptive attributes of the app. Bear in mind that this endpoint does not alter the core configuration of the app.
+      summary: Change App's attributes
+      description: >
+        Changes the descriptive attributes of the app by setting the values of the parameters passed. Bear in mind that this endpoint does not alter the core configuration of the app.
+
+        Any parameters not provided will be changed to `null`.
+
       responses:
         '200':
           description: The updated app.
@@ -244,7 +398,68 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/App'
+                type: object
+                required:
+                  - id
+                  - name
+                properties:
+                  name:
+                    type: string
+                    description: The name of the app.
+                    example: Saferize Example Changed
+                  platforms:
+                    type: array
+                    description: >-
+                      An array of enums that specify what platforms are supported by this
+                      app.
+                    items:
+                      type: string
+                    enum:
+                      - ANDROID
+                      - IOS
+                      - WINDOWS
+                      - MAC_OS
+                      - LINUX
+                      - APPLE_TV
+                      - ANDROID_TV
+                      - APPLE_WATCH
+                      - ANDROID_WATCH
+                      - XBOX
+                      - NINTENDO
+                      - PLAYSTATION
+                    example:
+                      - MAC_OS
+                      - IOS
+                  category:
+                    description: One of the predifned values indicating the category of the app.
+                    type: string
+                    enum:
+                      - GAME
+                      - MEDIA
+                    example: MEDIA
+                  description:
+                    type: string
+                    description: A description of the app.
+                    example: >-
+                      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+                      eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                  shortDescription:
+                    type: string
+                    description: A short description of the app.
+                    example: >-
+                      Lorem ipsum dolor sit amet.
+                  urlName:
+                    type: string
+                    description: The partial url name of this app on Saferize.
+                  age:
+                    type: integer
+                    format: int64
+                    description: Minimum recommended age of app users.
+                    example: 4
+                  email:
+                    type: string
+                    description: The app developer's email.
+                    example: developer@example.com
         description: App fields to be updated.
         required: true
             
@@ -253,12 +468,18 @@ paths:
       tags:
         - App
       operationId: createKey
-      summary: Authenticate an app
+      summary: Create a Key to authenticate an App
       description: >-
-        Authenticate your app by using a public-key authentication. Your apps'
-        keys carry many privileges, so be sure to keep your private key secret!
+        To be able to use your app, you must authenticate your app by using a public-key authentication scheme (we only allows RSA encryption). 
+        Please take a look at [how to generate a private-public key set]().
+
+
+        Your apps' keys carry many privileges, so be sure to keep your private key secret!
         Do not share your private keys in publicly accessible areas such GitHub,
         client-side code, and so forth.
+
+
+        The returned access key is a piece of your login credential and will be used to generate a Json Web Token in order for your app to interact with our platform.
       parameters:
         - name: id
           in: path
@@ -282,15 +503,18 @@ paths:
         '409':
           $ref: '#/components/responses/Conflict'
       requestBody:
-        $ref: '#/components/requestBodies/createKeyPublicKey'
+        $ref: '#/components/requestBodies/RSAPublicKey'
     put:
       tags:
         - App
       operationId: rollKey
-      summary: Roll app authentication
+      summary: Roll the Key that authenticates an App
       description: >-
-        If you believe your key is compromised, roll the key with a newly
+        If you believe your key has been compromised, roll the key with a newly
         generated public key.
+
+
+        Although your access key will remain the same, you will NOT be able to use your old public key any longer. For this reason, make sure you have your corresponding private key stored safely.
       parameters:
         - name: id
           in: path
@@ -314,50 +538,23 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
       requestBody:
-        $ref: '#/components/requestBodies/createKeyPublicKey'
-  '/app/{id}':
-    get:
-      tags:
-        - App
-      operationId: getAppBy
-      summary: Retrieve an app
-      parameters:
-        - name: id
-          in: path
-          description: The identifier of the app to retrieve.
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '200':
-          description: Returns the app object.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/App'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
+        $ref: '#/components/requestBodies/RSAPublicKey'
   '/app/{id}[timeRestriction]*':
     patch:
-      summary: Update app time restrictions
+      summary: Update App time restrictions
       tags:
         - App
       operationId: changeTimeRestriction
       description: >
         Time restrictions is a Saferize internal feature. If you would like
-        parents to manage sessions, set time limits, and arbitrary pause/resume
+        parents to manage sessions, set time limits, and arbitrarily pause/resume
         the app, you can set the time restrictions flag value to `ENABLED`. This
         is also the default value set upon [app
-        creation](/#operation--app-post).
+        creation](/#createapp).
 
 
         Otherwise, you may disable this feature by setting the time restrictions
         flag value to `DISABLED`.
-
-        * The path in brackets not included in the actual path, but in the JsonPatch operation
       parameters:
         - name: id
           in: path
@@ -397,24 +594,24 @@ paths:
         - App
       operationId: changeStatus
       description: >
-        * The path in square brackets not included in the actual path, but in the JsonPatch operation.
-
-
         When the app is created, the initial status is `DRAFT`. Once the app is
-        configured, you may change the status to ```PUBLISHED``` via this
+        ready to be published, you may change the status to `IN_REVIEW` via this
         endpoint. This will initialize the process of publishing the app, and
-        the status will be `IN_REVIEW` until Saferize Customer Support approves
-        it.
+        will remain `IN_REVIEW` until Saferize Customer Support approves
+        it, upon which it will become `PUBLISHED`.
 
 
-        Firstly, you must [Authenticate the app](). In order to publish the app,
-        all [App](/#/definitions/App) fields must be populated. In addition to
+        Firstly, you must [Authenticate the app](/#createkey). In order to publish the app,
+        all [App](/#tocSapp) fields must be populated. In addition to
         this, the app must have have at least one
         [Screenshot](/#uploadscreenshot) and one
         [Logo](/#uploadlogo) uploaded. 
 
 
         To delete the app, set the status to `DELETED`.
+
+
+        You can learn more on how to go from creating an app to publishing one in our [Saferize Quick Start](http://google.com).
 
 
         If you need any help throughout this process, please contact the
@@ -457,7 +654,8 @@ paths:
       tags:
         - App
       operationId: updateAppConfig
-      summary: Update app configuration
+      summary: Update App configuration
+      description: Updates the accompanying configuration object of the app. Take a look at the [AppConfig](/#tocSappconfig) for more details about the attributes of this object.
       parameters:
         - name: id
           in: path
@@ -492,7 +690,7 @@ paths:
       tags:
         - App
       operationId: getAppConfig
-      summary: Retrieve app configuration
+      summary: Retrieve App configuration
       parameters:
         - name: id
           in: path
@@ -517,7 +715,7 @@ paths:
       tags:
         - App
       operationId: uploadLogo
-      summary: Upload app logo
+      summary: Upload App logo
       parameters:
         - name: id
           in: path
@@ -540,12 +738,13 @@ paths:
         '409':
           $ref: '#/components/responses/Conflict'
       requestBody:
-        $ref: '#/components/requestBodies/uploadLogoBody'
+        $ref: '#/components/requestBodies/RFC2388'
     get:
       tags:
         - App
       operationId: getLogos
-      summary: Retrieve app logo
+      security: []   # No security
+      summary: Retrieve App logo
       parameters:
         - name: id
           in: path
@@ -560,9 +759,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ImageUpload'
+                $ref: '#/components/schemas/ImageUpload'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
@@ -572,7 +769,7 @@ paths:
       tags:
         - App
       operationId: deleteLogo
-      summary: Delete app logo
+      summary: Delete App logo
       parameters:
         - name: id
           in: path
@@ -591,12 +788,16 @@ paths:
       responses:
         '204':
           description: Returns `No Content` if the deletion was succeeded.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
   '/app/{id}/screenshots':
     post:
       tags:
         - App
       operationId: uploadScreenshot
-      summary: Upload app screenshot
+      summary: Upload App screenshot
       parameters:
         - name: id
           in: path
@@ -619,12 +820,13 @@ paths:
         '409':
           $ref: '#/components/responses/Conflict'
       requestBody:
-        $ref: '#/components/requestBodies/uploadLogoBody'
+        $ref: '#/components/requestBodies/RFC2388'
     get:
       tags:
         - App
       operationId: getScreenshots
-      summary: Retrieve app screenshots
+      security: []   # No security
+      summary: Retrieve App screenshots
       parameters:
         - name: id
           in: path
@@ -639,9 +841,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ImageUpload'
+                $ref: '#/components/schemas/ImageUpload'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
@@ -651,7 +851,7 @@ paths:
       tags:
         - App
       operationId: deleteScreenshot
-      summary: Delete app screenshot
+      summary: Delete App screenshot
       parameters:
         - name: id
           in: path
@@ -670,12 +870,22 @@ paths:
       responses:
         '204':
           description: Returns `No Content` if the deletion was succeeded.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
   '/app/{id}/plan':
     get:
       tags:
         - App
       operationId: getAppPlan
-      summary: Retrieve app plan
+      security: []   # No security
+      description: >
+        Retrieves the subscription plan associated with the app. Take a look at the [SubscriptionPlan](/#tocSsubscriptionplan) for more details about the attributes of this object.
+
+
+        As you have probably noticed, we haven't exposed an endpoint for creating a subscription plan. The reason for this is we have a separate process for creating the subscription plan. Please contact our [Support](mailto:devs@saferize.com) and we will help you get started.
+      summary: Retrieve App plan
       parameters:
         - name: id
           in: path
@@ -695,44 +905,20 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '404':
           $ref: '#/components/responses/NotFound'
-  '/app/{id}/features':
-    get:
-      tags:
-        - App
-      operationId: getAppFeatures
-      summary: Retrieve app features
-      parameters:
-        - name: id
-          in: path
-          description: Unique identifier for the app.
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '200':
-          description: Returns an array of app feature objects if they exist on the system.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/AppFeature'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
   '/app/{id}/implementedFeatures':
     put:
       tags:
         - App
       operationId: setImplementedAppFeatures
-      summary: Set implemented features
+      summary: Set implemented app features
       description: >-
         The publicly visible list of implemented features is important for
-        transparency. From this list you can specify which ones the parents can
-        customize their experience when you [Set parental
-        features](/#operation--app--id--parentalFeatures-put).
+        parents to know what features their kids will be interacting with. From this list you can specify which ones the parents can
+        customize when you [set parental
+        features](/#setparentalappfeatures).
+
+        
+        WHen setting [AppFeatures](/#tocSappfeature) please make sure you set implemented features (by calling this endpoint), before setting the [parental features](/#setparentalappfeatures).
       parameters:
         - name: id
           in: path
@@ -747,9 +933,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/AppFeature'
+                $ref: '#/components/schemas/AppFeatures'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -757,12 +941,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
       requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Approval'
-        description: The new Approval
-        required: true
+        $ref: '#/components/requestBodies/AppFeatureNameArray'
   '/app/{id}/parentalFeatures':
     put:
       tags:
@@ -770,10 +949,13 @@ paths:
       operationId: setParentalAppFeatures
       summary: Set parental features
       description: >-
-        Parental features allow parents to customize their experience with these
-        features. It's up to developer's discretion to determine which features
-        they wish to expose. Please [Set implemented
-        features](/#operation--app--id--implementedFeatures-put) before setting
+        Parental features allow parents to customize their child's experience with these
+        features. It's up to the developer's discretion to determine which features
+        they wish to expose. 
+        
+        
+        Please [set implemented
+        features](/#setimplementedappfeatures) before setting
         parental features.
       parameters:
         - name: id
@@ -791,9 +973,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/AppFeature'
+                $ref: '#/components/schemas/AppFeatures'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -801,20 +981,42 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
       requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Approval'
-        description: The new Approval
-        required: true          
+        $ref: '#/components/requestBodies/AppFeatureNameArray'
+  '/app/{id}/features':
+    get:
+      tags:
+        - App
+      operationId: getAppFeatures
+      summary: Retrieve App features
+      parameters:
+        - name: id
+          in: path
+          description: Unique identifier for the app.
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Returns an array of app feature objects if they exist on the system.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppFeatures'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'        
   /approval:
     post:
       tags:
         - Approval
-      summary: Initiate an approval
+      summary: Initiate an Approval
       description: >-
-        To get parent consent to add a new app user (a child), a new approval
-        object is created.
+        A new approval object is created in order to get parent consent to add a new app user (a child).
+
+
+        Your app will be able to initiate approvals once it is pu lished. To learn more about setting up your app, please read our [Quick Start Guide](http://google.com).
       operationId: initiateApproval
       responses:
         '201':
@@ -823,299 +1025,202 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Approval'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/Conflict'                
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Approval'
+              type: object
+              required:
+                - id
+                - appUser
+                - family
+                - statusTime
+                - createdTime
+                - status
+              properties:
+                appUser:
+                  $ref: '#/components/schemas/AppUser'
+                approvalParent:
+                  $ref: '#/components/schemas/Parent'
+                family:
+                  $ref: '#/components/schemas/Family'
+                statusTime:
+                  type: string
+                  format: date-time
+                  description: The time and date of the last status change. The date-time notation as defined by [RFC 3339](https://tools.ietf.org/html/rfc3339).
+                  example: '2017-11-09T14:23:00.000Z'
+                createdTime:
+                  type: string
+                  format: date-time
+                  description: The time and date when this approval was created. The date-time notation as defined by [RFC 3339](https://tools.ietf.org/html/rfc3339).
+                  example: '2017-11-09T14:23:00.000Z'
+                status:
+                  description: The approval status
+                  type: string
+                  enum:
+                    - PENDING
+                    - NOTIFIED
+                    - APPROVED
+                    - REJECTED
+                  example: APPROVED
+                parentEmail:
+                  type: string
+                  description: The email of the parent who received this request
+                  example: parent@myfamily.com
+                parentMobilePhone:
+                  type: string
+                  description: >-
+                    The phone number of the parent who received this request. The format should be XXXYYYZZZZ (no dashes or
+                    parentheses).
+                  example: 4151234567
+                currentState:
+                  description: The approval status
+                  type: string
+                  enum:
+                    - ACTIVE
+                    - PAUSED
+                  example: ACTIVE  
         description: The new Approval
         required: true
     get:
       tags:
         - Approval
       operationId: getApprovals
-      summary: List all approvals
+      summary: List App approvals
+      description: Retrieves all the approvals associated with the app.
       responses:
         '200':
-          description: Returns all approvals
+          description: Returns an array of approvals associated with the app.
           content:
-            '*/*':
+            application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Approval'
+                $ref: '#/components/schemas/Approvals'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'                  
   '/approval/{id}':
     get:
       tags:
         - Approval
       operationId: getApprovalById
-      summary: Retrieve an approval
+      summary: Retrieve an Approval via identifier
       parameters:
         - name: id
           in: path
-          description: The identifier of the approval to retrieve.
+          description: Unique identifier for the approval.
           required: true
           schema:
             type: integer
             format: int64
       responses:
         '200':
-          description: Return a single approval
+          description: Returns the approval object associated with the id.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Approval'
-    patch:
-      tags:
-        - Approval
-      operationId: changeApproval
-      summary: Update an approval
-      parameters:
-        - name: id
-          in: path
-          description: The approval Id to get
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '200':
-          description: Return the changed approval
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Approval'
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/JsonPatch'
-              example:
-                op: replace
-                path: /status
-                value: APPROVED
-        description: >-
-          A JsonPatch array with the fields to be changed. Current supported
-          fields are ~ status, child, features
-        required: true
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'                
   '/approval/token/{token}':
     get:
       tags:
         - Approval
       operationId: getApprovalByToken
-      summary: Retrieve an approval via token
+      summary: Retrieve an Approval via token
       parameters:
         - name: token
           in: path
-          description: The unique token assigned by the app to the approval.
+          description: The unique token assigned by the app to the user.
           required: true
           schema:
             type: integer
             format: int64
       responses:
         '200':
-          description: Return approval
+          description: Returns the approval object associated with the token.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Approval'
-  /family:
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  '/session':
     post:
       tags:
-        - Family
-      summary: Create a family
-      description: >-
-        The family object is created when a child becomes an app user by parent
-        consent. The family members are associated with this object.
-      operationId: createFamily
+        - Session
+      operationId: createSession
+      summary: Create a developer session
       responses:
         '201':
-          description: Return the new Family
+          description: Returns the session object if the creation succeeded.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Family'
+                $ref: '#/components/schemas/Session'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
       requestBody:
         content:
           application/json:
-            schema:
-              $ref: '#/components/schemas/Family'
-        description: The new Family to be created
+            schema:              
+              type: object
+              required:
+                - accessKey
+                - secretKey
+              properties:
+                accessKey:
+                  type: string
+                  description: Access key of the developer that is attempting to create the session.
+                  example: 'jane.developer@saferize.com'
+                secretKey:
+                  type: string
+                  description: Secret key of the developer that is attempting to create the session.
+                  example: 'SuperHardPassword!1'                  
+        description: Credentials of the subject that is attempting to create the session.
         required: true
-  /family/me:
-    get:
-      tags:
-        - Family
-      operationId: getFamily
-      summary: Retrieve your family
-      responses:
-        '200':
-          description: Return the Family
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/Family'
-    put:
-      tags:
-        - Family
-      operationId: updateFamily
-      summary: Update your family
-      responses:
-        '200':
-          description: The changed Family
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/Family'
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Family'
-        description: The changed family.
-        required: true
-  /child:
-    get:
-      tags:
-        - Child
-      operationId: getChildren
-      summary: Get all children members of the family
-      responses:
-        '200':
-          description: Returns an array of Child
-          content:
-            '*/*':
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Child'
+  '/session/app/{token}':
     post:
       tags:
-        - Child
-      operationId: createChild
-      summary: Creates a new Child
-      responses:
-        '201':
-          description: The created Child
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/Child'
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Child'
-        description: The Child to be created.
-        required: true
-  '/child/{childId}':
-    get:
-      tags:
-        - Child
-      summary: Get a child via identifier
-      operationId: GetChildById
+        - Session
+      operationId: createAppUserSession
+      summary: Create an app user session
       parameters:
-        - name: childId
+        - name: token
           in: path
+          description: Unique username (alias) for the app user on the app.
           required: true
-          description: The identifier of the child to retrieve.
           schema:
-            type: integer
-            format: int64
+            type: string
       responses:
         '200':
-          description: Returns the child
+          description: Returns the app usage session object if the creation succeeded.
           content:
-            '*/*':
+            application/json:
               schema:
-                $ref: '#/components/schemas/Child'
-    put:
-      tags:
-        - Child
-      summary: Update a child via identifier
-      operationId: updateChild
-      parameters:
-        - name: childId
-          in: path
-          required: true
-          description: Unique identifier for the child.
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '200':
-          description: Returns the child
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/Child'
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Child'
-        description: The Child to be updated.
-        required: true
-  /parent:
-    post:
-      tags:
-        - Parent
-      summary: Creates a new Parent
-      responses:
-        '200':
-          description: Returns the new Parent
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/Parent'
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Parent'
-        description: The parent to be created.
-        required: true
-  '/parent/{parentId}':
-    get:
-      tags:
-        - Parent
-      summary: Gets a Parent by Id
-      operationId: getParentById
-      parameters:
-        - name: parentId
-          in: path
-          required: true
-          description: Unique identifier for the parent.
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '200':
-          description: Parent
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/Parent'
-  /parent/me:
-    put:
-      tags:
-        - Parent
-      summary: Change the Parent
-      operationId: UpdateParent
-      responses:
-        '200':
-          description: Returns the changed Parent
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/Parent'
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Parent'
-        description: The Parent to be updated.
-        required: true
+                $ref: '#/components/schemas/AppUsageSession'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'     
 components:
   responses:
     BadRequest:
@@ -1145,18 +1250,18 @@ components:
           schema:
             $ref: '#/components/schemas/Error'
   requestBodies:
-    AppFeature/properties/nameArray:
+    AppFeatureNameArray:
       content:
         application/json:
           schema:
             type: array
             items:
-              $ref: '#/components/schemas/AppFeature/properties/name'
+              $ref: '#/components/schemas/AppFeatureName'
             example:
               - CHAT
               - ADVERTISING
-      description: An array of implemented app features
-    createKeyPublicKey:
+      description: An array of app feature names.
+    RSAPublicKey:
       content:
         application/json:
           schema:
@@ -1167,35 +1272,21 @@ components:
               -----END PUBLIC KEY-----
       description: RSA public key.
       required: true
-    uploadLogoBody:
+    RFC2388:
       content:
-        application/json:
+        multipart/form-data:
           schema:
-            type: string
+            type: object
       description: >-
-        A file to upload. The file should follow the specifications of RFC 2388
-        (which defines file transfers for the `multipart/form-data protocol`.
+        A file to upload. The file should follow the specifications of [RFC 2388](https://tools.ietf.org/html/rfc2388)
+        (which defines file transfers for the `multipart/form-data protocol`).
       required: true
   securitySchemes:
     BearerAuth:
       type: http
       scheme: bearer
+      bearerFormat: JWT
   schemas:
-    Family:
-      type: object
-      required:
-        - id
-        - name
-      properties:
-        id:
-          type: integer
-          format: int64
-          description: Unique identifier for the family returned by the system.
-          example: 12345
-        name:
-          type: string
-          description: The family name
-          example: Smith
     App:
       type: object
       required:
@@ -1209,12 +1300,12 @@ components:
           example: 1
         name:
           type: string
-          description: The name of the app.
+          description: Name of the app.
           example: Saferize Example
         platforms:
           type: array
           description: >-
-            An array of enums that specify what platforms are supported by this
+            Array of enums that specify what platforms are supported by this
             app.
           items:
             type: string
@@ -1235,7 +1326,7 @@ components:
             - ANDROID
             - IOS
         category:
-          description: One of the predifned values indicating the category of the app.
+          description: One of the predefined values indicating the category of the app.
           type: string
           enum:
             - GAME
@@ -1243,7 +1334,7 @@ components:
           example: GAME
         timeRestriction:
           type: string
-          description: On/Off flag for enabling/disabling time restrictions on the app.
+          description: On/off flag for enabling/disabling time restrictions on the app.
           enum:
             - ENABLED
             - DISABLED
@@ -1252,7 +1343,7 @@ components:
           type: string
           description: >-
             Current lifecycle status of the app. Please read more on the
-            requirements for publishing the app.
+            requirements for [publishing the app](#changestatus).
           enum:
             - DRAFT
             - PUBLISHED
@@ -1260,31 +1351,50 @@ components:
           example: PUBLISHED
         description:
           type: string
-          description: A description of the app.
+          description: Description of the app. (max. number of characters = 255)
           example: >-
             Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
             eiusmod tempor incididunt ut labore et dolore magna aliqua.
+        shortDescription:
+          type: string
+          description: Short description of the app. (max. number of characters = 100)
+          example: >-
+            Lorem ipsum dolor sit amet.
         urlName:
           type: string
-          description: The partial url name of this app on Saferize.
-        details:
-          type: array
-          description: Features implemented on the app.
-          items:
-            type: string
-          enum:
-            - SOCIAL_INTERACTION
-            - IN_APP_PURCHASES
-            - ADVERTISING
-            - PAID_APP
-            - SUBSCRIPTION
-          example:
-            - SOCIAL_INTERACTION
-            - IN_APP_PURCHASES
+          description: Partial url name of this app on Saferize.
+        age:
+          type: integer
+          format: int64
+          description: Minimum recommended age of app users.
+          example: 5
         email:
           type: string
-          description: The app developer's email.
+          description: App developer's email.
           example: developer@example.com
+
+
+          
+    Apps:  
+      type: array
+      items:
+        $ref: "#/components/schemas/App"      
+    Family:
+      
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Unique identifier for the family returned by the system.
+          example: 12345
+        name:
+          type: string
+          description: Family name.
+          example: Smith        
     Parent:
       type: object
       required:
@@ -1301,22 +1411,23 @@ components:
           example: 123456
         firstName:
           type: string
-          description: First Name
+          description: Parent's first name.
           example: John
         lastName:
           type: string
-          description: Last Name
+          description: Parent's last name
           example: Smith
         mobilePhone:
           type: string
           format: phone
           description: >-
-            Mobile Phone. The format should be XXXYYYZZZZ (no dashes or
-            parenthesis)
+            Parent's phone number. The format should be XXXYYYZZZZ (no dashes or
+            parentheses).
           example: 41512345678
         family:
           $ref: '#/components/schemas/Family'
         email:
+          description: Parent's email address.
           type: string
           format: email
           example: parent@example.com
@@ -1336,21 +1447,22 @@ components:
           example: 1234567
         firstName:
           type: string
-          description: Child's first name
+          description: Child's first name.
           example: Sofia
         lastName:
           type: string
-          description: Child's last Name
+          description: Child's last name.
           example: Smith
         birthDate:
-          description: The childs date of birth
+          description: Child's date of birth.
           type: string
           format: date
           example: '2009-01-23T00:00:00.000Z'
         family:
+          description: Family.
           $ref: '#/components/schemas/Family'
         gender:
-          description: The child's gender
+          description: Child's gender.
           type: string
           enum:
             - MALE
@@ -1384,7 +1496,9 @@ components:
           type: string
           example: jane.doe@example.com
         mobilePhone:
-          description: Developer's primary mobile phone number.
+          description: >-
+            Developer's primary mobile phone number. The format should be XXXYYYZZZZ (no dashes or
+            parentheses).
           type: string
           example: 415-123-4567
         company:
@@ -1413,13 +1527,13 @@ components:
         id:
           type: integer
           format: int64
-          description: The AppUser Id returned by the system
+          description: Unique identifier for the app user returned by the system.
           example: 123
         token:
           type: string
           description: >-
-            A client token for the app. This is defined by the app and should be
-            unique per user of the app.
+            App user's token (username on the app). This is defined by the app and should be
+            user-unique.
           example: child_nickname_on_game_1
         app:
           $ref: '#/components/schemas/App'
@@ -1440,7 +1554,7 @@ components:
         id:
           type: integer
           format: int64
-          description: The Approval Id returned by the system
+          description: Unique identifier for the approval returned by the system.
           example: 12
         appUser:
           $ref: '#/components/schemas/AppUser'
@@ -1451,15 +1565,15 @@ components:
         statusTime:
           type: string
           format: date-time
-          description: The time and date of the last status change
+          description: Time and date of the last status change. The date-time notation as defined by [RFC 3339](https://tools.ietf.org/html/rfc3339).
           example: '2017-11-09T14:23:00.000Z'
         createdTime:
           type: string
           format: date-time
-          description: The time and date when this approval was created
+          description: Time and date when this approval was created. The date-time notation as defined by [RFC 3339](https://tools.ietf.org/html/rfc3339).
           example: '2017-11-09T14:23:00.000Z'
         status:
-          description: The approval status
+          description: The approval status.
           type: string
           enum:
             - PENDING
@@ -1469,12 +1583,24 @@ components:
           example: APPROVED
         parentEmail:
           type: string
-          description: The email of the parent who received this request
+          description: Email of the parent who received this request.
           example: parent@myfamily.com
         parentMobilePhone:
           type: string
-          description: The phone number of the parent who received this request
+          description: Phone number of the parent who received this request. The format should be XXXYYYZZZZ (no dashes or
+            parentheses).
           example: 4151234567
+        currentState:
+          description: Current state of the approval.
+          type: string
+          enum:
+            - ACTIVE
+            - PAUSED
+          example: ACTIVE          
+    Approvals:
+      type: array
+      items:
+        $ref: "#/components/schemas/Approval"    
     AppConfig:
       type: object
       properties:
@@ -1496,6 +1622,68 @@ components:
           example: 259200
         validatorName:
           $ref: '#/components/schemas/Validator'
+    Session:
+      type: object
+      required:
+        - duration
+        - subject
+        - signatureCode
+        - startedAt
+        - state
+        - uuid
+        - token
+      properties:
+        duration:
+          type: integer
+          format: int64
+          description: Duration of the session before it expires and is no longer valid.
+          example: 3600
+        subject:
+          description: Developer subject to whom the session belongs to.
+          $ref: '#/components/schemas/Developer'
+          
+        origin:
+          type: string
+          description: Origin of the requester that created the session.
+          example: '127.0.0.1'
+        signatureCode: 
+          type: string
+          description: Unique session signature.
+          example: '8479dd81-4a33-4806-902f-52cbbe93c240'
+        startedAt:
+          type: string
+          format: date-time
+          example: '2017-07-21T17:32:28Z'
+          description: Timestamp when the session was started. The date-time notation as defined by [RFC 3339](https://tools.ietf.org/html/rfc3339)
+        state:
+          description: The current state of the approval.
+          type: string
+          enum:
+            - ACTIVE,
+            - PAUSED
+          example: ACTIVE
+        uuid:
+          description: Unique [UUID](https://en.wikipedia.org/wiki/Universally_unique_identifier) of the session.
+          type: string
+          example: 'ce11cccc-1bdb-430f-8b9f-ee02079e4fe5'
+        token:
+          description: Unique token of the session.
+          type: string
+          example: 'VjF8MTA5ODh8Y29tLnNhZmVyaXplLmNvcmUuZW50aXRpZXMucGFyZW50LlBhcmVudHwxNTI1MjkyNjU2MTA4fGNlMTFjY2NjLTFiZGItNDMwZi04YjlmLWVlMDIwNzllNGZlNQ=='
+    AppUsageSession:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Unique identifier for the app usage session returned by the system.
+          example: 12345678
+        approval:
+          $ref: "#/components/schemas/Approval"                    
+        hostname:
+          type: string
+          description: IP address where the request to create an app usage session originated from.
+          example: 183.241.21.10
     AppFeature:
       type: object
       properties:
@@ -1512,20 +1700,7 @@ components:
             with.
           example: 12
         name:
-          type: string
-          description: 'The app feature''s name, meant to be displayable to the customer.'
-          enum:
-            - 'ADVERTISING,'
-            - 'CHAT,'
-            - 'COMMENTS,'
-            - 'DATA_COLLECTION,'
-            - 'IN_APP_PURCHASES,'
-            - 'LOCATION_SHARING,'
-            - 'PAID_APP,'
-            - 'PUSH_NOTIFICATIONS,'
-            - 'SOCIAL_INTERACTION,'
-            - SUBSCRIPTION
-          example: CHAT
+          $ref: "#/components/schemas/AppFeatureName"    
         implemented:
           type: boolean
           example: true
@@ -1535,7 +1710,11 @@ components:
           example: true
           description: >-
             Boolean flag indicating whether the parents are allowed to turn
-            off/on the feature.
+            on/off the feature.
+    AppFeatures:
+      type: array
+      items:
+        $ref: "#/components/schemas/AppFeature"    
     SubscriptionPlan:
       type: object
       properties:
@@ -1546,7 +1725,7 @@ components:
           example: 123456
         name:
           type: string
-          description: 'The plans’s name, meant to be displayable to the customer.'
+          description: The plans name, displayable to the customer.
           example: Platinum starter
         billingCycle:
           description: Specifies billing frequency.
@@ -1564,9 +1743,8 @@ components:
           type: number
           format: float
           description: >-
-            The cost of the item as a positive float in the smallest currency
-            unit (i.e. $2.99 will be represented as 299 cents).
-          example: 299
+            The cost of the item as a positive float.
+          example: 2.99
     ImageUpload:
       type: object
       properties:
@@ -1588,19 +1766,39 @@ components:
         width:
           type: integer
           format: int64
-          description: The witdh in pixels of the image object.
+          description: The width in pixels of the image object.
           example: 200
         height:
           type: integer
           format: int64
-          description: The witdh in pixels of the image object.
+          description: The height in pixels of the image object.
           example: 200
+      ImageUploads:
+        type: array
+        items:
+          $ref: "#/components/schemas/ImageUpload"    
     Validator:
+      description: Validator defines a specific way that the developer has chosen for the app to confirm parent-child relationship.
       type: string
       enum:
         - Microtransaction
         - SMS
       example: Microtransaction
+    AppFeatureName:
+      description: App feature name.
+      type: string
+      enum:
+        - ADVERTISING
+        - CHAT
+        - COMMENTS
+        - DATA_COLLECTION
+        - IN_APP_PURCHASES
+        - LOCATION_SHARING
+        - PAID_APP
+        - PUSH_NOTIFICATIONS
+        - SOCIAL_INTERACTION
+        - SUBSCRIPTION
+      example: DATA_COLLECTION
     JsonPatch:
       type: object
       properties:
@@ -1610,17 +1808,16 @@ components:
             - add
             - replace
             - remove
-          description: |
-            Sort order:
-             * add - Ascending, from A to Z.
-             * replace - Descending, from Z to A. 
+          description: Predifined JsonPatch operation.
           example: replace
         path:
           type: string
-          description: the field to be updated using JsonPath syntax
+          description: The path to be updated using JsonPatch syntax.
           example: /status
         value:
-          type: object
+          type: string
+          description: New resource value.
+          example: PUBLISHED
     Error:
       description: >
         Saferize uses conventional HTTP response codes to indicate the success
@@ -1631,11 +1828,13 @@ components:
         Saferize's servers (these are rare).
       properties:
         message:
+          type: string
           description: A human-readable message providing more details about the error.
           example: There is already an app with those attributes.
         type:
           type: string
-          example: com.saferize.core.shared.DuplicateEntityException
+          description: Error type.
+          example: DuplicateEntityException
       required:
         - type
       type: object
